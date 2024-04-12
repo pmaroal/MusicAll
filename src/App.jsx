@@ -2,17 +2,17 @@ import React from "react";
 import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
 
 // Importar las vistas de la app
-import SignUp from "./Signup";
-import Home from "./Home";
-import LogIn from "./Login";
+import SignUp from "./views/Signup";
+import Home from "./views/Home";
+import LogIn from "./views/Login";
 
-import { NavbarBottom } from "../components/Navbar";
+import { NavbarBottom } from "./components/Navbar";
 
 // Importar el Container de react-bootstrap
 import { Container } from "react-bootstrap";
 
 // Importar AuthProvider que contiene las funciones relacionadas con el inicio de sesión
-import { AuthProvider } from "../services/AuthService";
+import { AuthProvider } from "./services/AuthService";
 
 function App() {
   return (
@@ -22,7 +22,7 @@ function App() {
     >
       <Router>
         <AuthProvider>
-          <body style={{ margin: "75px 0 50px 0" }}>
+          <body style={{ margin: "75px 0 75px 0" }}>
               {/* Rutas de las páginas */}
               <Routes>
                 <Route exact path="/" element={<Home />} />

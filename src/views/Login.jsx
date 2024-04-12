@@ -34,7 +34,7 @@ export default function Signup() {
             navigate("/")
             
         } catch (error) {
-            setError('Error al crear la cuenta.');
+            setError('Error al iniciar sesión.');
         }
         // Establecer el estado de carga en falso después de manejar el registro
         setLoading(false);
