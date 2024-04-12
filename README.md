@@ -5,7 +5,7 @@ MusicAll es una aplicación de gestión de agrupaciones musicales que permite a 
 ## Características principales
 
 - **Planificación de eventos:** Organiza tus eventos musicales y ensayos de forma eficiente.
-- **Repertorio individual y compartido:** Accede a un repertorio de partituras personalizado para cada músico, así como a un repertorio común que puede ser compartido entre todos los miembros de la agrupación.
+- **Repertorio musical:** Accede a un repertorio de partituras personalizado para cada músico, así como a un repertorio común que puede ser compartido entre todos los miembros de la agrupación.
 - **Gestión de usuarios:** Crea y administra perfiles de usuarios para tu agrupación musical.
 
 ## Enlace a la aplicación web
