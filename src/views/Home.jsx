@@ -17,11 +17,22 @@ export default function Home() {
           {account && (
             <>
               <p>
-                <strong>Nombre:</strong> {account.username}
+                <strong>Nombre:</strong> {account.name}
+              </p>
+              <p>
+                <strong>Apellidos:</strong> {account.surname}
               </p>
               <p>
                 <strong>Email:</strong> {account.email}
               </p>
+              <p>
+                <strong>Fecha de nacimiento:</strong> {account.birthDate.toDate().toLocaleDateString()} {/* Convierte birthDate a objeto Date y luego a formato de fecha */}
+              </p>
+              <p>
+                <strong>Instrumentos seleccionados:</strong>{" "}
+                {account.selectedInstruments && account.selectedInstruments.join(", ")}
+              </p>
+
               <Button type="button" className="w-100" onClick={logout}>
                 Cerrar sesión
               </Button>
@@ -34,3 +45,4 @@ export default function Home() {
     </>
   );
 }
+

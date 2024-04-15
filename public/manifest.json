@@ -1,6 +1,6 @@
 {
-  "short_name": "React App",
-  "name": "Create React App Sample",
+  "short_name": "MusicAll",
+  "name": "MusicAll - Gestión de agrupaciones musicales",
   "icons": [
     {
       "src": "favicon.ico",

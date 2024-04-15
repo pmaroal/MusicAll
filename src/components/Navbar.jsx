@@ -7,6 +7,7 @@ import {
   BellFill,
   MusicNoteBeamed,
 } from "react-bootstrap-icons";
+
 import AccountModal from "./ModalAccount";
 
 function NavbarTop() {

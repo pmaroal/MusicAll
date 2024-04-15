@@ -1,5 +1,5 @@
 import React from "react";
-import { Modal, Button, ModalTitle } from "react-bootstrap";
+import { Modal, ModalTitle } from "react-bootstrap";
 import { PersonFill } from "react-bootstrap-icons";
 import { useNavigate } from "react-router-dom";
 import useAccountController from "../controllers/AccountController";
@@ -36,7 +36,7 @@ function AccountModal({ showModal, handleCloseModal }) {
                     <div className="d-grid my-auto ">
                         {account && (
                             <>
-                                <strong className="ms-3">{account.username}</strong>
+                                <strong className="ms-3">{account.name} {account.surname}</strong>
                                 <small className="rounded-pill text-center bg-body-tertiary ms-3 px-2">
                                     {account.email}
                                 </small>
@@ -56,7 +56,7 @@ function AccountModal({ showModal, handleCloseModal }) {
                     </button>
                     <button
                         type="button"
-                        onClick={() => navigate("/sign-up")} // Navega a la ruta /sign-up
+                        onClick={() => navigate("/registro")} // Navega a la ruta /registro
                         className="list-group-item text-start"
                         disabled={account ? true : false}
                     >

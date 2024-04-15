@@ -1,86 +1,129 @@
-// Importar React y los hooks necesarios desde react-router-dom y react-bootstrap
 import React, { useRef, useState } from "react";
 import { useAuth } from "../services/AuthService";
-import { Form, Button, Card, Alert } from 'react-bootstrap';
+import { Form, Button, Card, Alert, FormCheck } from 'react-bootstrap';
 import { Link, useNavigate } from 'react-router-dom';
 
-// Definir y exportar la vista para registrar una nueva cuenta
 export default function Signup() {
-    // Referencias a los campos de email y contraseña del formulario
     const emailRef = useRef();
     const passwordRef = useRef();
     const passwordConfRef = useRef();
-
-    // Función de registro de useAuth
-    const { signup } = useAuth();
-    // Definir el React-Router para navegar entre rutas
+    
     const navigate = useNavigate();
-    // Estado para manejar los errores de registro
+    
+    const [showPasswordWarning, setShowPasswordWarning] = useState(false);
+    const [showPasswordConfWarning, setShowPasswordConfWarning] = useState(false);
+    const [acceptedTerms, setAcceptedTerms] = useState(false);
     const [error, setError] = useState('');
-    // Estado para indicar si la solicitud de registro de cuenta está en curso
-    const [loading, setLoading] = useState(false);
 
-    // Función asincrónica para manejar el envío del formulario de registro
     async function handleSubmit(e) {
-        e.preventDefault(); // Impedir el comportamiento predeterminado del formulario
+        e.preventDefault();
 
-        // Validar que ambas contraseñas coincidan
+        // Validación y control de errores
+        // Comprobar si las contraseñas coinciden
         if (passwordRef.current.value !== passwordConfRef.current.value) {
             return setError('Las contraseñas no coinciden.');
         }
 
-        // Validar que la contraseña tenga al menos 6 caracteres (requisito de FireBase Auth)
+        // Comprobar si la contraseña se ajusta a los controles de Firebase Authentification
         if (passwordRef.current.value.length < 6) {
             return setError('La contraseña debe tener al menos 6 caracteres.');
         }
 
+        if (!acceptedTerms) {
+            return setError('Debes aceptar los términos y condiciones.');
+        }
+        
         try {
-            setError(""); // Limpiar el mensaje de error
-            setLoading(true); // Establecer el estado de carga en verdadero
+            setError(""); //Limpiar registro de errores
             
-            // Llamar a la función de registro con el email y la contraseña
-            await signup(emailRef.current.value, passwordRef.current.value);
-            
-            // Redirigir al usuario a la página de inicio
-            // TODO: Mejorar con mensajes de confirmación
-            navigate("/")
+            // Redirigir al usuario a la vista de datos de usuario
+            navigate("/registro/nuevo-usuario", {
+                state: {
+                    email: emailRef.current.value,
+                    password: passwordRef.current.value
+                }
+            });
             
         } catch (error) {
             setError('Error al crear la cuenta.');
+            return; // Salir de la función handleSubmit cuando ocurre un error
         }
-
-        // Establecer el estado de carga en falso después de manejar el registro
-        setLoading(false);
     }
+
+    // Mostrar una alerta mientras se escribe la contraseña si es menor a 6 caracteres - requisito de Firebase
+    const handlePasswordAlert = () => {
+        if (passwordRef.current.value.length < 6) {
+            setShowPasswordWarning(true);
+        } else {
+            setShowPasswordWarning(false);
+        }
+    };
+
+    const handlePasswordConfirmationAlert = () => {
+        if (passwordConfRef.current.value && passwordConfRef.current.value !== passwordRef.current.value) {
+            setShowPasswordConfWarning(true);
+        } else {
+            setShowPasswordConfWarning(false);
+        }
+    };
 
     return (
         <>
-            <Card className='shadow my-3'>
+            <Card className='shadow'>
                 <Card.Body>
-                    <h2 className='text-center py-3'>Crear una cuenta</h2>
+                    <h2 className='text-center py-3'>Crear cuenta</h2>
                     <Form onSubmit={handleSubmit}>
+                        {/**Campo email */}
                         <Form.Group id='email' className='my-2'>
                             <Form.Label>Email</Form.Label>
                             <Form.Control type='email' ref={emailRef} required />
                         </Form.Group>
+
+                        {/**Campo contraseña */}
                         <Form.Group id='password' className='my-2'>
                             <Form.Label>Contraseña</Form.Label>
-                            <Form.Control type='password' ref={passwordRef} required />
+                            <Form.Control type='password' ref={passwordRef} required onChange={handlePasswordAlert} />
+                            {/**Aviso contraseña no válida (solo comprueba la longitud es <6) */}
+                            {showPasswordWarning && (
+                                <Form.Text className="text-danger">
+                                    La contraseña debe tener al menos 6 caracteres.
+                                </Form.Text>
+                            )}
                         </Form.Group>
+                        {/**Campo confirmación contraseña */}
                         <Form.Group id='password-confirmation' className='my-2'>
                             <Form.Label>Vuelve a escribir tu contraseña</Form.Label>
-                            <Form.Control type='password' ref={passwordConfRef} required />
+                            <Form.Control type='password' ref={passwordConfRef} required  onChange={handlePasswordConfirmationAlert}/>
+                            {showPasswordConfWarning && (
+                                <Form.Text className="text-danger">
+                                    Las contraseñas no coinciden.
+                                </Form.Text>
+                            )}
                         </Form.Group>
-                        <Button type='submit' className='w-100 my-2' disabled={loading}>Registrarse</Button>
+
+                    {/**Checkbox de términos y condiciones */}
+                    <Form.Group id='terms' className='my-3'>
+                        <FormCheck>
+                            <FormCheck.Input type="checkbox" onChange={e => setAcceptedTerms(e.target.checked)} required />
+                            <FormCheck.Label className='small'>
+                                Acepto los <Link to={"/"}>términos y condiciones</Link> de <strong>MusicAll</strong>
+                            </FormCheck.Label>
+                        </FormCheck>
+                    </Form.Group>
+
+                        <Button type='submit' className='w-100 my-2'>Continuar</Button>
 
                         {error && <Alert variant="danger">{error}</Alert>}
                     </Form>
                 </Card.Body>
             </Card>
+
+
             <div className='mt-4'>
-                <Link to="/login" className='nav-link'><p>¿Ya tienes una cuenta? Iniciar sesión</p></Link>
+                <p>¿Ya tienes una cuenta?
+                    <Link to="/login" className='ms-2'>Iniciar sesión</Link>
+                </p>
             </div>
         </>
     )
 }
-

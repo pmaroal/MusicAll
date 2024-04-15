@@ -1,8 +1,11 @@
 class AccountModel {
-    constructor(email, username) {
-      this.email = email;
-      this.username = username;
-    }
+  constructor(email, name, surname, birthDate, selectedInstruments) {
+    this.email = email;
+    this.name = name;
+    this.surname = surname;
+    this.birthDate = birthDate;
+    this.selectedInstruments = selectedInstruments;
   }
-  
-  export default AccountModel;
+}
+
+export default AccountModel;

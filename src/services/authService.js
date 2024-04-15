@@ -1,7 +1,7 @@
 // Importar React y los hooks necesarios desde "react"
 import React, { useContext, useState, useEffect } from "react";
 // Importar la instancia de autenticación de Firebase desde configuración
-import { auth } from "../config/firebase";
+import { auth, firestore } from "../config/firebase";
 
 // Crear un contexto de autenticación
 const AuthContext = React.createContext();
@@ -20,9 +20,24 @@ export function AuthProvider({ children }) {
     const [loading, setLoading] = useState(true);
 
     // Función para registrarse utilizando el servicio de autenticación de Firebase
-    function signup(email, password) {
-        return auth.createUserWithEmailAndPassword(email, password);
+    async function signup(email, password, userData) {
+        // Crea el usuario en Firebase Auth
+        const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+        const user = userCredential.user;
+
+        // Añade los datos adicionales del usuario a Firestore
+        await firestore.collection('users').doc(user.uid).set({
+            email: email,
+            uid: user.uid,
+            name: userData.name,
+            surname: userData.surname,
+            birthDate: userData.birthDate,
+            selectedInstruments: userData.selectedInstruments
+        });
+
+        return user; // Devuelve el usuario creado
     }
+
 
     // Función para iniciar sesión utilizando el servicio de autenticación de Firebase
     function login(email, password) {
