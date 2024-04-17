@@ -1,11 +1,10 @@
-// Importar React y los hooks necesarios desde react-router-dom y react-bootstrap
 import React, { useRef, useState } from "react";
 import { useAuth } from "../services/AuthService";
 import { Form, Button, Card, Alert, InputGroup } from 'react-bootstrap';
 import { Eye, EyeSlash, Google } from "react-bootstrap-icons";
 import { Link, useNavigate } from 'react-router-dom';
 
-// Definir y exportar la vista para iniciar sesión
+// Vista para el formulario de inicio de sesión
 export default function Signup() {
     // Referencias a los campos de email y contraseña del formulario
     const emailRef = useRef();
@@ -36,7 +35,7 @@ export default function Signup() {
             navigate("/")
             
         } catch (error) {
-            setError('Error al iniciar sesión.');
+            setError('Usuario o contraseña incorrectos.');
         }
         // Establecer el estado de carga en falso después de manejar el registro
         setLoading(false);
@@ -44,30 +43,36 @@ export default function Signup() {
 
     return (
         <>
+            {/* Card para el formulario de inicio de sesión */}
             <Card className='shadow my-3'>
                 <Card.Body>
                     <h2 className='text-center py-3'>Iniciar sesión</h2>
                     <Form onSubmit={handleSubmit}>
+                        
                         {/**Campo email */}
                         <Form.Group id='email' className='my-2'>
-                            <Form.Label>Email</Form.Label>
+                            <Form.Label className="fw-semibold">Email</Form.Label>
                             <Form.Control type='email' ref={emailRef} required />
                         </Form.Group>
 
                         {/**Campo contraseña */}
                         <Form.Group id='password' className='my-2'>
-                            <Form.Label>Contraseña</Form.Label>
+                            <Form.Label className="fw-semibold">Contraseña</Form.Label>
                             <InputGroup>
                                 <Form.Control type={showPassword ? 'text' : 'password'} ref={passwordRef} required />
                                 <Button variant="outline-secondary" onClick={() => setShowPassword(!showPassword)} className="pb-2">
+                                    {/* Icono de ojo para mostrar/ocultar contraseña */}
                                     {showPassword ? <Eye/> : <EyeSlash/>}
                                 </Button>
                             </InputGroup>
                         </Form.Group>
                         
+                        {/* Botón para enviar el formulario de inicio de sesión */}
                         <Button type='submit' className='w-100 my-2' disabled={loading}>Iniciar sesión</Button>
+                        {/* Mostrar mensaje de error si existe */}
                         {error && <Alert variant="danger">{error}</Alert>}
 
+                        {/* Separador horizontal y texto "O" */}
                         <div className="d-flex align-items-center justify-content-center mt-3">
                             <hr className="flex-grow-1" />
                             <div className="mx-3 text-black-50">O</div>
@@ -75,13 +80,15 @@ export default function Signup() {
                         </div>
                     </Form>
                     
-                    {/* ! Sin implementar */}
+                    {/* Botón para continuar con Google (sin implementar) */}
                     <Button type="button" variant="light" className="w-100 my-2 d-flex align-items-center justify-content-center"> 
                         <Google className="me-2" />
                         Continuar con Google
                     </Button>
                 </Card.Body>
             </Card>
+            
+            {/* Enlaces para registrarse y recuperar contraseña */}
             <div className='mt-4'>
                 <p>¿No tienes una cuenta?
                     <Link to="/registro" className='ms-2'>Regístrate</Link>

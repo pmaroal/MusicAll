@@ -1,16 +1,19 @@
 import React, { useEffect } from "react";
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
 // Importar las vistas de la app
-import SignUp from "./views/Signup";
 import Home from "./views/Home";
+import Events from "./views/Events";
+import Notifications from "./views/Notifications";
+import Repertoire from "./views/Repertoire";
+import User from "./views/User";
 import LogIn from "./views/Login";
-import AddUserData from "./views/AddUserData";
-
-import { NavbarBottom } from "./components/Navbar";
+import SignUp from "./views/Signup";
+import CreateNewUser from "./views/CreateNewUser";
 
 // Importar el Container de react-bootstrap
 import { Container } from "react-bootstrap";
+import { NavbarTop, NavbarBottom } from "./components/Navbar";
 
 // Importar AuthProvider que contiene las funciones relacionadas con el inicio de sesión
 import { AuthProvider, useAuth } from "./services/AuthService";
@@ -22,38 +25,48 @@ function App() {
     document.title = appName;
   }, []);
 
+  // Componente para las rutas privadas, solo accesibles para usuarios autenticados
+  function PrivateRoute({ element }) {
+    const { currentUser } = useAuth();
+  
+    // Si no hay un usuario logueado, redirigir a /login
+    if (!currentUser) {
+      return <Navigate to="/login" replace />;
+    }
+    // Si hay un usuario logueado, ir a la vista de la url introducida e incorporar las barras de navegación superior e inferior
+    return (
+      <>
+        <NavbarTop />
+        {element}
+        <NavbarBottom />
+      </>
+    );
+  }
+
   return (
-    <Container
-      className="container align-items-center justify-content-center"
-      style={{ height: "100vh", maxWidth: "460px" }}
-    >
-      <Router>
-        <AuthProvider>
-          <Container style={{ margin: "75px 0 75px 0" }}>
-            {/* Rutas de las páginas */}
-            <Routes>
-              <Route path="/" element={<PrivateRoute />} />
+    <BrowserRouter>
+      <AuthProvider>
+        {/**Contenedor principal de la aplicación */}
+        <Container className="container align-items-center justify-content-center" style={{ maxWidth: "460px", margin: "75px auto 75px auto" }}>
+          <Routes>
 
-              <Route path="/login" element={<LogIn />} />
-              <Route path="/registro" element={<SignUp />} />
-              <Route path="/registro/nuevo-usuario" element={<AddUserData />} />
-            </Routes>
-          </Container>
+            {/**Rutas privadas - es necesario estar logeado para acceder a ellas, si no redirige a /login */}
+            <Route path="/" element={<PrivateRoute element={<Home />} />} />
+            <Route path="/eventos" element={<PrivateRoute element={<Events />} />} />
+            <Route path="/notificaciones" element={<PrivateRoute element={<Notifications />} />} />
+            <Route path="/repertorio" element={<PrivateRoute element={<Repertoire />} />} />
+            <Route path="/usuario" element={<PrivateRoute element={<User />} />} />
 
-          <NavbarBottom /> {/* Ajustar para que no se muestre en todas las vistas */}
-
-        </AuthProvider>
-      </Router>
-    </Container>
+            {/**Rutas de Login y registro */}
+            <Route path="/login" element={<LogIn />} />
+            <Route path="/registro" element={<SignUp />} />
+            <Route path="/registro/nuevo-usuario" element={<CreateNewUser />} />
+            
+          </Routes>
+        </Container>
+      </AuthProvider>
+    </BrowserRouter>
   );
-}
-
-// Componente para manejar la ruta privada
-// Si hay un usuario logeado va a la vista Home, en caso contrario va a /login
-function PrivateRoute() {
-  const { currentUser } = useAuth();
-
-  return currentUser ? <Home /> : <Navigate to="/login" />;
 }
 
 export default App;

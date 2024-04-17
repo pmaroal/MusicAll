@@ -29,6 +29,7 @@ export default function Signup() {
             return setError('La contraseña debe tener al menos 6 caracteres.');
         }
 
+        // Comprobar si se ha seleccionado el checkbox de términos y condiciones
         if (!acceptedTerms) {
             return setError('Debes aceptar los términos y condiciones.');
         }
@@ -37,7 +38,7 @@ export default function Signup() {
             setError(""); //Limpiar registro de errores
             
             // Redirigir al usuario a la vista de datos de usuario
-            navigate("/registro/nuevo-usuario", {
+            navigate("nuevo-usuario", {
                 state: {
                     email: emailRef.current.value,
                     password: passwordRef.current.value
@@ -58,7 +59,8 @@ export default function Signup() {
             setShowPasswordWarning(false);
         }
     };
-
+    
+    // Mostrar una alerta mientras se escribe la confirmación de contraseña si no coincide con la contraseña
     const handlePasswordConfirmationAlert = () => {
         if (passwordConfRef.current.value && passwordConfRef.current.value !== passwordRef.current.value) {
             setShowPasswordConfWarning(true);
@@ -90,6 +92,7 @@ export default function Signup() {
                                 </Form.Text>
                             )}
                         </Form.Group>
+
                         {/**Campo confirmación contraseña */}
                         <Form.Group id='password-confirmation' className='my-2'>
                             <Form.Label>Vuelve a escribir tu contraseña</Form.Label>
@@ -118,7 +121,7 @@ export default function Signup() {
                 </Card.Body>
             </Card>
 
-
+            {/* Enlace para iniciar sesión con cuenta */}
             <div className='mt-4'>
                 <p>¿Ya tienes una cuenta?
                     <Link to="/login" className='ms-2'>Iniciar sesión</Link>
