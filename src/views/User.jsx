@@ -1,23 +1,53 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useAuth } from "../services/AuthService";
+import { auth, firestore } from "../config/firebase";
 import { Button, Alert, Table, Form } from "react-bootstrap";
-
-import useAccountController from "../controllers/AccountController";
+import { useNavigate } from 'react-router-dom';
 
 // Componente para la visualización y edición del perfil de usuario
 export default function User() {
+    const navigate = useNavigate();
+    const { currentUser } = useAuth();
+
     // Obtener datos del usuario y mensajes de error del controlador de cuenta
-    const { account, error } = useAccountController();
+    const [account, setAccount] = useState(null);
+    const [error, setError] = useState("");
 
     // Estado para controlar el modo de edición del perfil
     const [editing, setEditing] = useState(false);
     // Estado para almacenar los datos editados del perfil
     const [editedAccount, setEditedAccount] = useState({});
 
+    // Función para obtener los datos del usuario
+    useEffect(() => {
+        const fetchUserData = async () => {
+            try {
+                if (currentUser) {
+                    const { uid } = currentUser; // ID del usuario en Firebase
+                    const userRef = firestore.collection("users").doc(uid); // Referencia al documento de usuario en Firestore
+                    const userDoc = await userRef.get(); // Petición async de los datos del documento
+
+                    if (userDoc.exists) {
+                        // Datos del usuario
+                        const userData = userDoc.data();
+                        setAccount(userData);
+                        setEditedAccount(userData);
+                    } else {
+                        setError("No se encontraron datos para este usuario");
+                    }
+                } else {
+                    setAccount(null);
+                }
+            } catch (error) {
+                setError("Error al cargar los datos del usuario");
+            }
+        };
+
+        fetchUserData();
+    }, [currentUser]);
+
     // Función para habilitar el modo de edición
     const handleEdit = () => {
-        // Inicializa los datos editados con los datos de la cuenta actual
-        setEditedAccount(account);
-        // Cambia al modo de edición
         setEditing(true);
     };
 
@@ -27,10 +57,34 @@ export default function User() {
     };
 
     // Función para guardar los cambios realizados en el perfil del usuario
-    const handleSaveChanges = () => {
-        // ...
-        setEditing(false); // Cambia al modo de visualización después de guardar los cambios
-    };
+    async function handleSaveChanges() {
+        try {
+            const user = auth.currentUser;
+            const updateData = {}; // Objeto para almacenar los datos a actualizar
+
+            // Verificar si editedAccount.name está definido y agregarlo al objeto de actualización
+            if (editedAccount.name !== undefined) {
+                updateData.name = editedAccount.name;
+            }
+
+            // Verificar si editedAccount.surname está definido y agregarlo al objeto de actualización
+            if (editedAccount.surname !== undefined) {
+                updateData.surname = editedAccount.surname;
+            }
+
+            // Actualizar los datos en Firestore solo si hay campos definidos para actualizar
+            if (Object.keys(updateData).length > 0) {
+                await firestore.collection('users').doc(user.uid).update(updateData);
+            }
+
+            setAccount(editedAccount); // Actualizar la cuenta en el estado
+            navigate("/usuario");
+            setEditing(false); // Cambia al modo de visualización después de guardar los cambios
+        } catch (error) {
+            console.error("Error updating user profile:", error);
+            setError("Error al guardar los cambios");
+        }
+    }
 
     // Función para manejar los cambios en los campos del formulario de edición
     const handleChange = (e) => {
@@ -53,6 +107,21 @@ export default function User() {
 
                     {/**Presentado en un Form para poder editarlo */}
                     <Form>
+
+                        {/**Campo de email */}
+                        <Form.Group className="my-3">
+                            <Form.Label className='fw-semibold'>Email</Form.Label>
+                            <Form.Control
+                                type="email"
+                                name="email"
+                                value={editing ? editedAccount.email : account.email}
+                                onChange={handleChange}
+                                disabled // TODO: Gestionar cambio de email usando AuthService
+                            />
+                            {/**Mostrar fecha de creación de la cuenta */}
+                            <Form.FloatingLabel className='text-center text-secondary small'>Creado en: {account.creationDate || "sin datos"}</Form.FloatingLabel>
+                        </Form.Group>
+
                         {/**Campo de nombre */}
                         <Form.Group className="my-3">
                             <Form.Label className='fw-semibold'>Nombre</Form.Label>
@@ -77,18 +146,6 @@ export default function User() {
                             />
                         </Form.Group>
 
-                        {/**Campo de email */}
-                        <Form.Group className="my-3">
-                            <Form.Label className='fw-semibold'>Email</Form.Label>
-                            <Form.Control
-                                type="email"
-                                name="email"
-                                value={editing ? editedAccount.email : account.email}
-                                onChange={handleChange}
-                                disabled={!editing}
-                            />
-                        </Form.Group>
-
                         {/**Campo de fecha de nacimiento */}
                         <Form.Group className="my-3">
                             <Form.Label className='fw-semibold'>Fecha de nacimiento</Form.Label>
@@ -97,7 +154,7 @@ export default function User() {
                                 name="birthDate"
                                 value={account.birthDate.toDate().toLocaleDateString()}
                                 onChange={handleChange}
-                                disabled
+                                disabled // TODO: Gestionar cambio de fecha de nacimiento
                             />
                         </Form.Group>
                     </Form>
@@ -133,7 +190,7 @@ export default function User() {
                     </div>
                 </>
             )}
-            
+
             {/**Mensaje si no hay usuario logeado */}
             {!account && <p>No hay usuario logeado</p>}
         </>

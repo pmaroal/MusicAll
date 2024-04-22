@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from "../services/AuthService";
 import AccountModel from "../models/AccountModel";
@@ -33,13 +33,13 @@ function useAccountController() {
                     if (userDoc.exists) {
                         // Datos del usuario
                         const userData = userDoc.data();
-                        const { email, name, surname, birthDate, selectedInstruments } = userData;
+                        const { email, name, surname, birthDate, selectedInstruments, creationTime } = userData;
 
                         // Crea una instancia de AccountModel con los datos del usuario
-                        const accountData = new AccountModel(email, name, surname, birthDate, selectedInstruments);
+                        const accountModel = new AccountModel(email, name, surname, birthDate, selectedInstruments, creationTime);
                         
                         // Actualiza el estado con los datos de la cuenta del usuario
-                        setAccount(accountData);
+                        setAccount(accountModel);
 
                     // Mensaje de error si no se encuentran datos para el usuario
                     } else {

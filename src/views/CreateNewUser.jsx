@@ -1,6 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import { Form, Button, Card, Alert, CardHeader, Accordion, ListGroup, Modal } from "react-bootstrap";
+import { Form, Button, Card, Alert, Accordion, ListGroup, Modal } from "react-bootstrap";
 import { ArrowLeft } from "react-bootstrap-icons";
 import Calendar from 'react-calendar' // Importar paquete react-calendar para el widget del calendario (https://www.npmjs.com/package/react-calendar)
 import 'react-calendar/dist/Calendar.css';
@@ -29,7 +29,7 @@ export default function CreateNewUser() {
         <>
             {/**Card que contiene el formulario de registro */}
             <Card className="shadow">
-                <CardHeader>
+                <Card.Header>
                     {/**Botón para volver atrás */}
                     <Button
                         type="button"
@@ -39,7 +39,7 @@ export default function CreateNewUser() {
                     >
                         <ArrowLeft />
                     </Button>
-                </CardHeader>
+                </Card.Header>
 
                 <Card.Body>
                     {/**Formulario de registro */}
@@ -81,6 +81,7 @@ export default function CreateNewUser() {
                                         maxDate={maxDate}
                                         minDate={new Date(1901, 0, 1)}
                                         locale="es"
+                                        className="container"
                                         required
                                     />
                                 </Modal.Body>

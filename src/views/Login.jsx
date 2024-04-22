@@ -5,7 +5,7 @@ import { Eye, EyeSlash, Google } from "react-bootstrap-icons";
 import { Link, useNavigate } from 'react-router-dom';
 
 // Vista para el formulario de inicio de sesión
-export default function Signup() {
+export default function LogIn() {
     // Referencias a los campos de email y contraseña del formulario
     const emailRef = useRef();
     const passwordRef = useRef();
@@ -28,12 +28,12 @@ export default function Signup() {
         try {
             setError(""); // Limpiar el mensaje de error
             setLoading(true); // Establecer el estado de carga en verdadero
-            
+
             // Llamar a la función de iniciar sesión con el email y la contraseña
             await login(emailRef.current.value, passwordRef.current.value);
             // Redirigir al usuario a la página de inicio
             navigate("/")
-            
+
         } catch (error) {
             setError('Usuario o contraseña incorrectos.');
         }
@@ -48,7 +48,10 @@ export default function Signup() {
                 <Card.Body>
                     <h2 className='text-center py-3'>Iniciar sesión</h2>
                     <Form onSubmit={handleSubmit}>
-                        
+
+                        {/* Mostrar mensaje de error si existe */}
+                        {error && <Alert variant="danger">{error}</Alert>}
+
                         {/**Campo email */}
                         <Form.Group id='email' className='my-2'>
                             <Form.Label className="fw-semibold">Email</Form.Label>
@@ -62,15 +65,14 @@ export default function Signup() {
                                 <Form.Control type={showPassword ? 'text' : 'password'} ref={passwordRef} required />
                                 <Button variant="outline-secondary" onClick={() => setShowPassword(!showPassword)} className="pb-2">
                                     {/* Icono de ojo para mostrar/ocultar contraseña */}
-                                    {showPassword ? <Eye/> : <EyeSlash/>}
+                                    {showPassword ? <Eye /> : <EyeSlash />}
                                 </Button>
                             </InputGroup>
                         </Form.Group>
-                        
+
                         {/* Botón para enviar el formulario de inicio de sesión */}
                         <Button type='submit' className='w-100 my-2' disabled={loading}>Iniciar sesión</Button>
-                        {/* Mostrar mensaje de error si existe */}
-                        {error && <Alert variant="danger">{error}</Alert>}
+
 
                         {/* Separador horizontal y texto "O" */}
                         <div className="d-flex align-items-center justify-content-center mt-3">
@@ -79,22 +81,22 @@ export default function Signup() {
                             <hr className="flex-grow-1" />
                         </div>
                     </Form>
-                    
+
                     {/* Botón para continuar con Google (sin implementar) */}
-                    <Button type="button" variant="light" className="w-100 my-2 d-flex align-items-center justify-content-center"> 
+                    <Button type="button" variant="light" className="w-100 my-3 d-flex align-items-center justify-content-center">
                         <Google className="me-2" />
                         Continuar con Google
                     </Button>
                 </Card.Body>
             </Card>
-            
+
             {/* Enlaces para registrarse y recuperar contraseña */}
             <div className='mt-4'>
                 <p>¿No tienes una cuenta?
                     <Link to="/registro" className='ms-2'>Regístrate</Link>
                 </p>
                 <p>¿Has olvidado la contraseña?
-                    <Link to="/" className="ms-2">Recuperar contraseña</Link> 
+                    <Link to="/recuperar-contrasena" className="ms-2">Recuperar contraseña</Link>
                 </p>
 
             </div>

@@ -48,7 +48,7 @@ function NavbarTop() {
 
   return (
     <>
-      <Navbar className="navbar-top mx-auto" fixed="top" style={{ maxWidth: "460px", top: "0" }} >
+      <Navbar className="navbar-top bg-white mx-auto" fixed="top" style={{ maxWidth: "460px", top: "0" }} >
         <Nav className="container mx-3 bg-body-secondary rounded-pill justify-content-end" >
           <Nav.Link>
             <Button

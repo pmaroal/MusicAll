@@ -63,12 +63,13 @@ export default function useUserController() {
 
             // Registro del usuario con los datos proporcionados
             await signup(email, password, {
-                // ! Mejorar el formato de capitalización
+                // ! Mejorar el formato de capitalización (de esta forma no capitaliza segundos nombres o apellidos)
                 // Se puede usar la clase de Bootstrap text-capitalize para poner en mayús la primera letra de cada palabra, pero se guardaría en minúsculas en la db
                 name: nameRef.current.value.charAt(0).toUpperCase() + nameRef.current.value.slice(1),
                 surname: surnameRef.current.value.charAt(0).toUpperCase() + surnameRef.current.value.slice(1),
                 birthDate: selectedDate,
                 selectedInstruments: selectedInstruments
+                
             });
 
             // Redireccionar a inicio después de registrarse

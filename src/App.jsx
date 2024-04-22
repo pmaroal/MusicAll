@@ -8,6 +8,7 @@ import Notifications from "./views/Notifications";
 import Repertoire from "./views/Repertoire";
 import User from "./views/User";
 import LogIn from "./views/Login";
+import ForgotPass from "./views/ForgotPassword"
 import SignUp from "./views/Signup";
 import CreateNewUser from "./views/CreateNewUser";
 
@@ -59,6 +60,7 @@ function App() {
 
             {/**Rutas de Login y registro */}
             <Route path="/login" element={<LogIn />} />
+            <Route path="/recuperar-contrasena" element={<ForgotPass />} />
             <Route path="/registro" element={<SignUp />} />
             <Route path="/registro/nuevo-usuario" element={<CreateNewUser />} />
             

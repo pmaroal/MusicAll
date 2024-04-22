@@ -5,7 +5,9 @@ class AccountModel {
     this.surname = surname;
     this.birthDate = birthDate;
     this.selectedInstruments = selectedInstruments;
+    this.creationDate = new Date().toLocaleString();
   }
+  
 }
 
 export default AccountModel;

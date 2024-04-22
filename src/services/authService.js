@@ -32,7 +32,8 @@ export function AuthProvider({ children }) {
             name: userData.name,
             surname: userData.surname,
             birthDate: userData.birthDate,
-            selectedInstruments: userData.selectedInstruments
+            selectedInstruments: userData.selectedInstruments,
+            creationDate: new Date().toLocaleString(),
         });
 
         return user; // Devuelve el usuario creado
