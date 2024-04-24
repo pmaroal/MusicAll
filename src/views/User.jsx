@@ -12,6 +12,7 @@ export default function User() {
     // Obtener datos del usuario y mensajes de error del controlador de cuenta
     const [account, setAccount] = useState(null);
     const [error, setError] = useState("");
+    const [message, setMessage] = useState("");
 
     // Estado para controlar el modo de edición del perfil
     const [editing, setEditing] = useState(false);
@@ -80,9 +81,9 @@ export default function User() {
             setAccount(editedAccount); // Actualizar la cuenta en el estado
             navigate("/usuario");
             setEditing(false); // Cambia al modo de visualización después de guardar los cambios
+            setMessage("Los datos se han actualizado correctamente.");
         } catch (error) {
-            console.error("Error updating user profile:", error);
-            setError("Error al guardar los cambios");
+            setError("Error al guardar los cambios.");
         }
     }
 
@@ -104,6 +105,8 @@ export default function User() {
             {account && (
                 <>
                     <h2 className='text-center py-3'>Información de perfil</h2>
+                    
+                    {message && <Alert variant="info">{message}</Alert>}
 
                     {/**Presentado en un Form para poder editarlo */}
                     <Form>
@@ -180,7 +183,7 @@ export default function User() {
                     <div className='d-flex gap-3 mt-4'>
                         {/**Si está en modo edición, mostrar el botón de editar */}
                         {!editing ? (
-                            <Button variant="danger" className='w-100 fw-bold' onClick={handleEdit}>Editar perfil</Button>
+                            <Button variant="danger" className='w-100 fw-semibold' onClick={handleEdit}>Editar perfil</Button>
                         ) : (
                             <> {/**Botones para cancelar y guardar cambios en el modo de edición */}
                                 <Button variant="secondary" onClick={handleCancel}>Cancelar</Button>

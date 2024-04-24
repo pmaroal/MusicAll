@@ -1,5 +1,5 @@
 import React from "react";
-import { ListGroup, Modal, ModalTitle } from "react-bootstrap";
+import { ListGroup, Modal, ModalTitle, Button } from "react-bootstrap";
 import { PersonFill } from "react-bootstrap-icons";
 import { useNavigate } from "react-router-dom";
 import useAccountController from "../controllers/AccountController";
@@ -121,8 +121,20 @@ function ModalAccount({ showModal, handleCloseModal }) {
             Cerrar sesión
           </button>
 
+
+
            {/**Añadir botones para eliminar cuenta, ver informacion de grupos o lo que sea oportuno */}
         </ListGroup>
+
+        <Button
+            onClick={() => navigate("/")} // Llama a la función para cerrar sesión
+            variant="danger"
+            className="fw-semibold w-100 mt-3"
+            disabled={!account} // Lo deshabilita si no hay una cuenta iniciada
+            >
+            Eliminar cuenta
+          </Button>
+
       </Modal.Body>
     </Modal>
   );
