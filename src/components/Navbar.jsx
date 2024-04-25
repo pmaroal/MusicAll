@@ -48,8 +48,9 @@ function NavbarTop() {
 
   return (
     <>
-      <Navbar className="navbar-top bg-white mx-auto" fixed="top" style={{ maxWidth: "460px", top: "0" }} >
-        <Nav className="container mx-3 bg-body-secondary rounded-pill justify-content-end" >
+      <Navbar className="navbar-top bg-white mx-auto" fixed="top" >
+        <Nav className="container bg-body-secondary rounded-pill justify-content-end" >
+          {/**Icono usuario */}
           <Nav.Link>
             <Button
               type="button"
@@ -82,9 +83,8 @@ function NavbarBottom() {
   return (
     <>
     <Navbar
-      className="bg-body-secondary mx-auto rounded-top-5"
+      className="container bg-body-secondary mx-auto rounded-top-5"
       fixed="bottom"
-      style={{ maxWidth: "460px" }}
     >
       <Nav className="container justify-content-around">
         {/* Botón para ir a la página de inicio */}

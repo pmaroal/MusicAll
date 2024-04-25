@@ -50,7 +50,7 @@ export function AuthProvider({ children }) {
         return auth.signOut();
     }
 
-    // Función para restablecer la contraseña utilizando el servicio de autenticación de Firebase <!sin implementar>
+    // Función para restablecer la contraseña utilizando el servicio de autenticación de Firebase 
     function resetPassword(email) {
         return auth.sendPasswordResetEmail(email);
     }
@@ -65,6 +65,11 @@ export function AuthProvider({ children }) {
         return currentUser.updatePassword(password);
     }
 
+    // Función para eliminar la cuenta de usuario actual
+    function deleteAccount() {
+        return currentUser.delete();
+    }
+
     // Efecto para suscribirse a los cambios de autenticación del usuario
     useEffect(() => {
         const unsubscribe = auth.onAuthStateChanged(user => {
@@ -76,7 +81,7 @@ export function AuthProvider({ children }) {
         return unsubscribe;
     }, []);
 
-    // Valor del contexto que se proporciona a los componentes secundarios
+    // Funciones que se van a retornar al restod e la app
     const value = {
         currentUser,
         login,
@@ -84,7 +89,8 @@ export function AuthProvider({ children }) {
         logout,
         resetPassword,
         updateEmail,
-        updatePassword
+        updatePassword,
+        deleteAccount
     };
 
     // Renderizar el componente AuthProvider y proporcionar el valor del contexto a sus componentes secundarios

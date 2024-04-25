@@ -7,16 +7,11 @@ import useAccountController from "../controllers/AccountController";
 // Componente ModalAccount para mostrar información de la cuenta y acciones disponibles
 function ModalAccount({ showModal, handleCloseModal }) {
   // Obtiene datos de la cuenta y la función de logout del AccountController
-  const { account, logout } = useAccountController();
+  const { account, handleLogout, handleDeleteAccount } = useAccountController();
   
   // Función para navegación entre vistas
   const navigate = useNavigate();
 
-  // Función para manejar el cierre de sesión
-  const handleLogout = () => {
-    logout(); // Cierra la sesión del usuario
-    handleCloseModal(); // Cierra el modal después de cerrar sesión
-  };
 
   return (
 
@@ -126,14 +121,20 @@ function ModalAccount({ showModal, handleCloseModal }) {
            {/**Añadir botones para eliminar cuenta, ver informacion de grupos o lo que sea oportuno */}
         </ListGroup>
 
+        {/**Botón para eliminar la cuenta de usuario */}
         <Button
-            onClick={() => navigate("/")} // Llama a la función para cerrar sesión
-            variant="danger"
-            className="fw-semibold w-100 mt-3"
-            disabled={!account} // Lo deshabilita si no hay una cuenta iniciada
-            >
-            Eliminar cuenta
-          </Button>
+          /**TODO: Cambiar el 'window.confirm'. Funciona bien pero se puede integrar mejor */
+          onClick={() => {
+            if (window.confirm("¿Estás seguro de que quieres eliminar tu cuenta? Esta acción es irreversible.")) {
+              handleDeleteAccount();  // Llama a la función para cerrar sesión
+            }
+          }}
+          variant="danger"
+          className="fw-semibold w-100 mt-3"
+          disabled={!account} // Lo deshabilita si no hay una cuenta iniciada
+          >
+          Eliminar cuenta
+        </Button>
 
       </Modal.Body>
     </Modal>

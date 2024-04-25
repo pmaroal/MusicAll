@@ -48,7 +48,7 @@ function App() {
     <BrowserRouter>
       <AuthProvider>
         {/**Contenedor principal de la aplicación */}
-        <Container className="container align-items-center justify-content-center" style={{ maxWidth: "460px", margin: "75px auto 75px auto" }}>
+        <Container style={{ margin: "75px auto 75px auto" }}>
           <Routes>
 
             {/**Rutas privadas - es necesario estar logeado para acceder a ellas, si no redirige a /login */}
