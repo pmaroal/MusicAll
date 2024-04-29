@@ -20,7 +20,7 @@ function ModalAccount({ showModal, handleCloseModal }) {
 
       {/**Cabecera con botón cerrar */}
       <Modal.Header className="pb-0 border-0" closeButton>
-        <ModalTitle className="fw-bold">MusicAll</ModalTitle>
+        <ModalTitle className="fw-bold">{document.title}</ModalTitle>
       </Modal.Header>
 
       {/**Cuerpo del modal */}
@@ -121,6 +121,9 @@ function ModalAccount({ showModal, handleCloseModal }) {
            {/**Añadir botones para eliminar cuenta, ver informacion de grupos o lo que sea oportuno */}
         </ListGroup>
 
+        {/**Separador horizontal */}
+        <hr className="flex-grow-1 mx-5 mt-4" />
+
         {/**Botón para eliminar la cuenta de usuario */}
         <Button
           /**TODO: Cambiar el 'window.confirm'. Funciona bien pero se puede integrar mejor */
@@ -129,8 +132,8 @@ function ModalAccount({ showModal, handleCloseModal }) {
               handleDeleteAccount();  // Llama a la función para cerrar sesión
             }
           }}
-          variant="danger"
-          className="fw-semibold w-100 mt-3"
+          variant="outline-danger"
+          className="btn-sm w-100 border-0"
           disabled={!account} // Lo deshabilita si no hay una cuenta iniciada
           >
           Eliminar cuenta

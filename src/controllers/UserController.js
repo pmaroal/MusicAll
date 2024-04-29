@@ -1,15 +1,24 @@
 import { useRef, useState, useEffect } from "react";
 import { useAuth } from "../services/AuthService";
+import { auth, firestore } from "../config/firebase";
 import { useNavigate, useLocation } from "react-router-dom";
 import { registerLocale } from "react-datepicker";
 import { es } from 'date-fns/locale/es';
 
 /**
- * Custom hook para gestionar la lógica del formulario de registro de usuarios.
+ * Custom hook para gestionar las funciones CRUD para los usuarios:
+ *  -   (Create): CreateUser()
+ *  -   (Retrieve): Se realiza en la barra de navegación en conjunto con el resto de colecciones <!TODO: mejorarlo y separarlo>
+ *  -   (Update): EditUserData()
+ *  -   (Delete): Se realiza a nivel de cuentas desde 'AccountController/handleDeleteAccount'
+ */
+
+
+/** Función CreateUser para crear un nuevo usuario en la vista 'CreateNewUser'
  * Maneja la interacción con los campos del formulario, la autenticación de usuario (con authService), y la validación de los datos ingresados.
  * Además, gestiona la visibilidad de un modal para la selección de la fecha de nacimiento.
  */
-export default function useUserController() {
+export function CreateUser() {
     // Obtiene el servicio de autenticación para registrar usuarios
     const { signup } = useAuth();
 
@@ -40,13 +49,13 @@ export default function useUserController() {
     }, []);
 
     // Estado para controlar la visibilidad del modal
-    const [showModal, setShowModal] = useState(false); 
+    const [showModal, setShowModal] = useState(false);
 
     // Función para mostrar el modal de selección de fecha
-    const handleShowModal = () => { setShowModal(true); }; 
+    const handleShowModal = () => { setShowModal(true); };
 
     // Función para cerrar el modal de selección de fecha
-    const handleCloseModal = () => { setShowModal(false); }; 
+    const handleCloseModal = () => { setShowModal(false); };
 
     // Estado para los instrumentos seleccionados
     const [selectedInstruments, setSelectedInstruments] = useState([]);
@@ -69,7 +78,7 @@ export default function useUserController() {
                 surname: surnameRef.current.value.charAt(0).toUpperCase() + surnameRef.current.value.slice(1),
                 birthDate: selectedDate,
                 selectedInstruments: selectedInstruments
-                
+
             });
 
             // Redireccionar a inicio después de registrarse
@@ -82,17 +91,131 @@ export default function useUserController() {
 
     // Retorna los elementos necesarios para interactuar con el formulario y el modal
     return {
-        nameRef,
-        surnameRef,
-        selectedDate,
-        maxDate,
-        selectedInstruments,
-        handleSubmit,
-        error,
-        setSelectedDate,
-        setSelectedInstruments,
-        showModal,
-        handleShowModal,
-        handleCloseModal
+        nameRef, // Referencia al campo de nombre
+        surnameRef, // Referencia al campo de apellidos
+        selectedDate, // Fecha de nacimiento seleccionada
+        maxDate, // Fecha máxima permitida
+        selectedInstruments, // Instrumentos seleccionados
+        handleSubmit, // Función para enviar el formulario
+        navigate, // Función de navegación de React Router
+        error, // Mensaje de error
+        setSelectedDate, // Función para establecer la fecha seleccionada
+        setSelectedInstruments, // Función para establecer los instrumentos seleccionados
+        showModal, // Estado para mostrar u ocultar el modal
+        handleShowModal, // Función para mostrar el modal
+        handleCloseModal // Función para ocultar el modal
     };
+}
+
+
+/** Función EditUserData para editar los datos del usuario en la vista 'User'
+ * Maneja la interacción con los campos del formulario (por ahora solo nombre y apellidos).
+ */
+export function EditUserData() {
+    const { currentUser } = useAuth(); // Obtiene el usuario actual autenticado
+    const navigate = useNavigate(); // Función de navegación de React Router
+
+    // Obtener datos del usuario y mensajes de error y confirmación
+    const [account, setAccount] = useState(null);
+    const [error, setError] = useState("");
+    const [message, setMessage] = useState("");
+
+    // Estado para controlar el modo de edición del perfil
+    const [editing, setEditing] = useState(false); // Estado para indicar si el usuario está editando el perfil
+
+    // Estado para almacenar los datos editados del perfil
+    const [editedAccount, setEditedAccount] = useState({}); // Estado para almacenar los datos editados del perfil
+
+
+    // Efecto para obtener los datos del usuario al cargar el componente o al cambiar el usuario actual
+    useEffect(() => {
+        // Función asincrónica para obtener los datos del usuario
+        const fetchUserData = async () => {
+            try {
+                // Verifica si hay un usuario autenticado
+                if (currentUser) {
+                    const { uid } = currentUser; // Obtiene el ID del usuario actual
+                    const userRef = firestore.collection("users").doc(uid); // Referencia al documento del usuario en Firestore
+                    const userDoc = await userRef.get(); // Obtiene el documento del usuario
+
+                    // Verifica si el documento del usuario existe en Firestore
+                    if (userDoc.exists) {
+                        const userData = userDoc.data(); // Obtiene los datos del usuario del documento
+                        setAccount(userData); // Establece los datos del usuario
+                        setEditedAccount(userData); // Establece los datos editados del usuario
+                    } else {
+                        setError("No se encontraron datos para este usuario"); // Mensaje de error si no se encuentran datos
+                    }
+                } else {
+                    setAccount(null); // Establece los datos del usuario como nulos si no hay usuario autenticado
+                }
+            } catch (error) {
+                setError("Error al cargar los datos del usuario"); // Mensaje de error si hay un error al cargar los datos del usuario
+            }
+        };
+        fetchUserData(); // Llama a la función para obtener los datos del usuario al montar el componente o al cambiar el usuario actual
+    }, [currentUser]); // Ejecuta el efecto cuando el usuario actual cambia
+
+
+    // Función para activar el modo de edición del perfil
+    const handleEdit = () => {
+        setEditing(true);
+    };
+
+    // Función para cancelar la edición del perfil
+    const handleCancel = () => {
+        setEditing(false);
+    };
+    
+    // Función para manejar los cambios en los campos del formulario de edición
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        setEditedAccount(prevAccount => ({
+            ...prevAccount,
+            [name]: value
+        }));
+    };
+
+    // Función asincrónica para guardar los cambios realizados en el perfil del usuario
+    async function handleSaveChanges() {
+        try {
+            const user = auth.currentUser;
+            const updateData = {}; // Objeto para almacenar los datos actualizados del usuario
+
+            // Verifica si se han editado los campos de nombre y apellido
+            if (editedAccount.name !== undefined) {
+                updateData.name = editedAccount.name; // Actualiza el nombre del usuario en el objeto de datos actualizados
+            }
+
+            if (editedAccount.surname !== undefined) {
+                updateData.surname = editedAccount.surname; // Actualiza el apellido del usuario en el objeto de datos actualizados
+            }
+
+            // Verifica si se han realizado cambios en los datos del usuario
+            if (Object.keys(updateData).length > 0) {
+                await firestore.collection('users').doc(user.uid).update(updateData); // Actualiza los datos del usuario en la base de datos
+            }
+
+            setAccount(editedAccount); // Establece los datos del usuario con los datos editados
+            navigate("/usuario"); // Redirecciona al usuario a su perfil
+            setEditing(false); // Desactiva el modo de edición
+            setMessage("Los datos se han actualizado correctamente."); // Mensaje de confirmación de la actualización exitosa
+        } catch (error) {
+            setError("Error al guardar los cambios."); // Mensaje de error si no se pueden guardar los cambios
+        }
+    }
+
+
+    // Retorna los elementos necesarios para interactuar con el formulario de edición del perfil
+    return {
+        account, // Datos del usuario
+        editedAccount, // Datos editados del usuario
+        error, // Mensaje de error
+        message, // Mensaje de confirmación
+        editing, // Estado de edición del perfil
+        handleEdit, // Función para activar el modo de edición
+        handleCancel, // Función para cancelar la edición
+        handleChange, // Función para manejar cambios en los campos
+        handleSaveChanges, // Función para guardar los cambios
+    }
 }

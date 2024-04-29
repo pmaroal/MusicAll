@@ -1,10 +1,9 @@
 import React from "react";
-import { useNavigate } from "react-router-dom";
 import { Form, Button, Card, Alert, Accordion, ListGroup, Modal } from "react-bootstrap";
 import { ArrowLeft } from "react-bootstrap-icons";
 import Calendar from 'react-calendar' // Importar paquete react-calendar para el widget del calendario (https://www.npmjs.com/package/react-calendar)
 import 'react-calendar/dist/Calendar.css';
-import useUserController from "../controllers/UserController";
+import { CreateUser } from "../controllers/UserController";
 
 export default function CreateNewUser() {
     // Utiliza el hook useUserController para obtener referencias, estados y funciones relacionadas con el controlador de usuario
@@ -14,16 +13,16 @@ export default function CreateNewUser() {
         selectedDate,
         maxDate,
         handleSubmit,
+        navigate,
         error,
         setSelectedDate,
         setSelectedInstruments,
         showModal,
         handleShowModal,
         handleCloseModal
-    } = useUserController();
-    
+    } = CreateUser();
+
     // Hook de React Router para la navegación
-    const navigate = useNavigate();
 
     return (
         <>
@@ -59,22 +58,24 @@ export default function CreateNewUser() {
                         {/**Campo de fecha de nacimiento */}
                         <Form.Group id="birthday" className="d-grid my-3">
                             <Form.Label>Fecha de nacimiento</Form.Label>
-                            
+
                             {/**Botón para abrir el modal de selección de fecha */}
-                            <Button type="button" variant="outline-dark" className="text-start" onClick={handleShowModal}>
+                            <Button type="button" variant="light" className="text-start border" onClick={handleShowModal}>
                                 {/**Si hay una fecha seleccionada, muestra la fecha en formato específico, de lo contrario, muestra un mensaje predeterminado */}
                                 {selectedDate ? selectedDate.toLocaleDateString("es-ES", {
                                     day: "2-digit",
                                     month: "2-digit",
                                     year: "numeric",
-                                }) : "Seleccionar fecha"}
+                                }) : "Seleccionar una fecha"}
                             </Button>
 
                             {/**Modal de selección de fecha */}
                             <Modal show={showModal} onHide={handleCloseModal} centered>
+                                <Modal.Header closeButton></Modal.Header>
+
                                 <Modal.Body>
                                     {/**Componente Calendar para seleccionar la fecha */}
-                                    <Calendar 
+                                    <Calendar
                                         selected={selectedDate}
                                         onChange={(date) => setSelectedDate(date)}
                                         dateFormat="dd/MM/yyyy"
@@ -84,6 +85,10 @@ export default function CreateNewUser() {
                                         className="container"
                                         required
                                     />
+                                    <Button className="w-100 mt-3"
+                                        onClick={handleCloseModal}>
+                                        Confirmar
+                                    </Button>
                                 </Modal.Body>
                             </Modal>
                         </Form.Group>
