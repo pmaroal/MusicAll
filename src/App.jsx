@@ -56,7 +56,7 @@ function App() {
             <Route path="/eventos" element={<PrivateRoute element={<Events />} />} />
             <Route path="/notificaciones" element={<PrivateRoute element={<Notifications />} />} />
             <Route path="/repertorio" element={<PrivateRoute element={<Repertoire />} />} />
-            <Route path="/usuario" element={<PrivateRoute element={<User />} />} />
+            <Route path="/mi-perfil" element={<PrivateRoute element={<User />} />} />
 
             {/**Rutas de Login y registro */}
             <Route path="/login" element={<LogIn />} />

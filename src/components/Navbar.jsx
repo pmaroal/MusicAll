@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Navbar, Nav, OverlayTrigger, Tooltip, Button } from "react-bootstrap";
+import { Navbar, Nav, Button } from "react-bootstrap";
 import {
   PersonFill,
   Search,
@@ -11,6 +11,8 @@ import {
 
 import ModalAccount from "./ModalConfig";
 import SearchBar from "./SearchBar";
+import { NavLink } from "react-router-dom";
+
 
 // Componente para la barra de navegación superior
 function NavbarTop() {
@@ -50,7 +52,7 @@ function NavbarTop() {
   return (
     <>
       <Navbar className="navbar-top container-fluid justify-content-evenly bg-white " fixed="top" >
-        
+
         {/**Barra de búsqueda */}
         <Nav className="container bg-body-secondary rounded-pill mx-3 px-3" >
           <Nav.Item
@@ -83,7 +85,7 @@ function NavbarTop() {
         </Navbar.Brand>
       </Navbar>
 
-      <ModalAccount  showModal={showModalAccount} handleCloseModal={() => setShowModalAccount(false)} />
+      <ModalAccount showModal={showModalAccount} handleCloseModal={() => setShowModalAccount(false)} />
       <SearchBar showModal={showModalSearch} handleCloseModal={() => setShowModalSearch(false)} />
     </>
   );
@@ -99,48 +101,24 @@ function NavbarBottom() {
       >
         <Nav className="container justify-content-around">
           {/* Botón para ir a la página de inicio */}
-          <OverlayTrigger
-            trigger={["hover", "focus"]}
-            placement="top"
-            overlay={<Tooltip id="tooltip">Inicio</Tooltip>}
-          >
-            <Nav.Link href="/" >
-              <HouseFill size={"24px"} />
-            </Nav.Link>
-          </OverlayTrigger>
+          <NavLink to="/" className="nav-link" activeClassName="active">
+            <HouseFill size={"24px"} />
+          </NavLink>
 
           {/* Botón para ir a la página de eventos */}
-          <OverlayTrigger
-            trigger={["hover", "focus"]}
-            placement="top"
-            overlay={<Tooltip id="tooltip">Eventos</Tooltip>}
-          >
-            <Nav.Link href="/eventos">
-              <CalendarWeekFill size={"24px"} />
-            </Nav.Link>
-          </OverlayTrigger>
+          <NavLink to="/eventos" className="nav-link" activeClassName="active">
+            <CalendarWeekFill size={"24px"} />
+          </NavLink>
 
           {/* Botón para ir a la página de notificaciones */}
-          <OverlayTrigger
-            trigger={["hover", "focus"]}
-            placement="top"
-            overlay={<Tooltip id="tooltip">Notificaciones</Tooltip>}
-          >
-            <Nav.Link href="/notificaciones">
-              <BellFill size={"24px"} />
-            </Nav.Link>
-          </OverlayTrigger>
+          <NavLink to="/notificaciones" className="nav-link" activeClassName="active">
+            <BellFill size={"24px"} />
+          </NavLink>
 
           {/* Botón para ir a la página de repertorio */}
-          <OverlayTrigger
-            trigger={["hover", "focus"]}
-            placement="top"
-            overlay={<Tooltip id="tooltip">Repertorio</Tooltip>}
-          >
-            <Nav.Link href="/repertorio">
-              <MusicNoteBeamed size={"24px"} />
-            </Nav.Link>
-          </OverlayTrigger>
+          <NavLink to="/repertorio" className="nav-link" activeClassName="active">
+            <MusicNoteBeamed size={"24px"} />
+          </NavLink>
         </Nav>
       </Navbar>
     </>

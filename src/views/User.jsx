@@ -1,5 +1,4 @@
 import React from 'react';
-
 import { Button, Alert, Table, Form } from "react-bootstrap";
 import { EditUserData } from "../controllers/UserController";
 

@@ -75,7 +75,7 @@ function ModalAccount({ showModal, handleCloseModal }) {
           <button
             type="button"
             onClick={() => {
-              navigate("/usuario"); // Navega a la vista del perfil del usuario
+              navigate("/mi-perfil"); // Navega a la vista del perfil del usuario
               handleCloseModal(); // Cierra el modal después de hacer clic en el botón, si no sigue activo en la siguiente pantalla
             }}
             className="list-group-item text-start"
@@ -132,8 +132,8 @@ function ModalAccount({ showModal, handleCloseModal }) {
               handleDeleteAccount();  // Llama a la función para cerrar sesión
             }
           }}
-          variant="outline-danger"
-          className="btn-sm w-100 border-0"
+          variant="white"
+          className="text-danger btn-sm w-100 border-0"
           disabled={!account} // Lo deshabilita si no hay una cuenta iniciada
           >
           Eliminar cuenta
