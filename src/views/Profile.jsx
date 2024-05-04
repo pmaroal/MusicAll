@@ -4,19 +4,19 @@ import { EditUserData } from "../controllers/UserController";
 
 
 // Componente para la visualización y edición del perfil de usuario
-export default function User() {
-        // Utiliza el hook useUserController para obtener referencias, estados y funciones relacionadas con el controlador de usuario
-        const {
-            account,
-            editedAccount,
-            error,
-            message,
-            editing,
-            handleEdit,
-            handleCancel,
-            handleChange,
-            handleSaveChanges,
-        } = EditUserData();
+export default function Profile() {
+    // Utiliza el hook useUserController para obtener referencias, estados y funciones relacionadas con el controlador de usuario
+    const {
+        account,
+        editedAccount,
+        error,
+        message,
+        editing,
+        handleEdit,
+        handleCancel,
+        handleChange,
+        handleSaveChanges,
+    } = EditUserData();
 
     return (
         <>

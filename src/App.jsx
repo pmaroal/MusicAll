@@ -6,7 +6,8 @@ import Home from "./views/Home";
 import Events from "./views/Events";
 import Notifications from "./views/Notifications";
 import Repertoire from "./views/Repertoire";
-import User from "./views/User";
+import Profile from "./views/Profile";
+import InfoUser from './views/InfoUser';
 import LogIn from "./views/Login";
 import ForgotPass from "./views/ForgotPassword"
 import SignUp from "./views/Signup";
@@ -56,7 +57,10 @@ function App() {
             <Route path="/eventos" element={<PrivateRoute element={<Events />} />} />
             <Route path="/notificaciones" element={<PrivateRoute element={<Notifications />} />} />
             <Route path="/repertorio" element={<PrivateRoute element={<Repertoire />} />} />
-            <Route path="/mi-perfil" element={<PrivateRoute element={<User />} />} />
+            <Route path="/mi-perfil" element={<PrivateRoute element={<Profile />} />} />
+            {/* Ruta para el perfil de otro usuario */}
+            <Route path="/perfil" element={<PrivateRoute element={<InfoUser />} />} />
+
 
             {/**Rutas de Login y registro */}
             <Route path="/login" element={<LogIn />} />

@@ -101,22 +101,22 @@ function NavbarBottom() {
       >
         <Nav className="container justify-content-around">
           {/* Botón para ir a la página de inicio */}
-          <NavLink to="/" className="nav-link" activeClassName="active">
+          <NavLink to="/" className="nav-link" activeclassname="active">
             <HouseFill size={"24px"} />
           </NavLink>
 
           {/* Botón para ir a la página de eventos */}
-          <NavLink to="/eventos" className="nav-link" activeClassName="active">
+          <NavLink to="/eventos" className="nav-link" activeclassname="active">
             <CalendarWeekFill size={"24px"} />
           </NavLink>
 
           {/* Botón para ir a la página de notificaciones */}
-          <NavLink to="/notificaciones" className="nav-link" activeClassName="active">
+          <NavLink to="/notificaciones" className="nav-link" activeclassname="active">
             <BellFill size={"24px"} />
           </NavLink>
 
           {/* Botón para ir a la página de repertorio */}
-          <NavLink to="/repertorio" className="nav-link" activeClassName="active">
+          <NavLink to="/repertorio" className="nav-link" activeclassname="active">
             <MusicNoteBeamed size={"24px"} />
           </NavLink>
         </Nav>

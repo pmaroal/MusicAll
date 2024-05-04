@@ -3,6 +3,7 @@ import { firestore } from "../config/firebase";
 import { Modal, ListGroup, Badge, Form, Alert, Button, OverlayTrigger, Tooltip } from "react-bootstrap";
 import { PersonCircle, MusicNoteList, PeopleFill, CalendarWeekFill, ArrowLeft } from "react-bootstrap-icons";
 import { useAuth } from "../services/AuthService";
+import { Link } from "react-router-dom";
 
 function SearchBar({ showModal, handleCloseModal }) {
     const [searchResults, setSearchResults] = useState([]);
@@ -201,16 +202,19 @@ function SearchBar({ showModal, handleCloseModal }) {
                 {/**Lista de resultados */}
                 <ListGroup variant="flush">
                     {searchResults.map((result, index) => (
-                        <ListGroup.Item key={index} className="d-flex align-items-center gap-3">
+                        <ListGroup.Item key={index} className="container">
                             {/**Perfiles de usuario */}
                             {selectedFilter === 'users' && (
-                                <>
+                                <Link className="link-unstyled text-reset text-decoration-none d-flex align-items-center gap-3"
+                                    to={`/perfil?usuario=${result.email}`}
+                                    onClick={handleCloseModal}
+                                    >
                                     {getFilterIcon(selectedFilter)}
                                     <div className="d-grid">
                                         {result.name} {result.surname}
-                                        <span className="rounded-pill bg-body-secondary small px-2">{result.email}</span>
+                                        <span className="rounded-pill bg-body-secondary text-muted small px-2">{result.email}</span>
                                     </div>
-                                </>
+                                </Link>
                             )}
 
                             {/**Agrupaciones musicales */}
