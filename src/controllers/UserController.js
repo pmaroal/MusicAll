@@ -8,7 +8,8 @@ import { es } from 'date-fns/locale/es';
 /**
  * Custom hook para gestionar las funciones CRUD para los usuarios:
  *  -   (Create): CreateUser()
- *  -   (Retrieve): Se realiza en la barra de navegación en conjunto con el resto de colecciones <!TODO: mejorarlo y separarlo>
+ *  -   (Retrieve): GetUserProfile()
+ *  -   (Retrieve ALL): Se realiza en la barra de búsqueda en conjunto con el resto de colecciones <!TODO: mejorarlo y separarlo>
  *  -   (Update): EditUserData()
  *  -   (Delete): Se realiza a nivel de cuentas desde 'AccountController/handleDeleteAccount'
  */
@@ -22,7 +23,7 @@ export function CreateUser() {
     // Obtiene el servicio de autenticación para registrar usuarios
     const { signup } = useAuth();
 
-    // Navegación y ubicación del router
+    // Navegación y location (obtiene el valor de '?...' de la url) de router
     const navigate = useNavigate();
     const location = useLocation();
 
@@ -218,4 +219,41 @@ export function EditUserData() {
         handleChange, // Función para manejar cambios en los campos
         handleSaveChanges, // Función para guardar los cambios
     }
+}
+
+/** 
+ * Función GetUserProfile para obtener el perfil de un usuario específico.
+ * Se utiliza para cargar los datos de los usuarios en la vista 'InfoUser'.
+ */
+export function GetUserProfile() {
+    const [userProfile, setUserProfile] = useState(null);
+    const [error, setError] = useState('');
+    const location = useLocation();
+
+    useEffect(() => {
+        const getUserEmailFromURL = () => {
+            const searchParams = new URLSearchParams(location.search);
+            return searchParams.get('usuario');
+        };
+
+        const userEmail = getUserEmailFromURL();
+
+        const fetchUserProfile = async () => {
+            try {
+                const userQuery = await firestore.collection("users").where("email", "==", userEmail).get();
+                if (!userQuery.empty) {
+                    const userData = userQuery.docs[0].data();
+                    setUserProfile(userData);
+                } else {
+                    setError("No se encontraron datos para este usuario");
+                }
+            } catch (error) {
+                setError("Error al cargar el perfil del usuario");
+            }
+        };
+
+        fetchUserProfile();
+    }, [location.search]);
+
+    return { userProfile, error };
 }

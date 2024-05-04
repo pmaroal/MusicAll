@@ -1,13 +1,16 @@
 import React, { useEffect, useState } from "react";
 import { firestore } from "../config/firebase";
-import { Modal, ListGroup, Badge, Form, Alert } from "react-bootstrap";
-import { PersonCircle, MusicNoteList, PeopleFill, CalendarWeekFill } from "react-bootstrap-icons";
+import { Modal, ListGroup, Badge, Form, Alert, Button, OverlayTrigger, Tooltip } from "react-bootstrap";
+import { PersonCircle, MusicNoteList, PeopleFill, CalendarWeekFill, ArrowLeft } from "react-bootstrap-icons";
+import { useAuth } from "../services/AuthService";
+import { Link } from "react-router-dom";
 
 function SearchBar({ showModal, handleCloseModal }) {
     const [searchResults, setSearchResults] = useState([]);
     const [selectedFilter, setSelectedFilter] = useState("users"); // Filtro 'users' por defecto
     const [searchText, setSearchText] = useState("");
     const [error, setError] = useState("");
+    const { currentUser } = useAuth(); // Obtiene el usuario actual autenticado
 
     /**
      * !TODO:
@@ -16,38 +19,63 @@ function SearchBar({ showModal, handleCloseModal }) {
      *  -   Añadir botones de acciones rápidas en cada resultado de búsqueda
      *  -   Actualizar los campos de búsqueda y ajustarlo al resto de categorías (ahora solo muestra data de users, el resto vacíos)
     */
-    
+
 
     useEffect(() => {
         // Función asincrónica para obtener datos de Firestore
         const fetchData = async () => {
             try {
                 let query;
+                //<!TODO: hay que añadir el filtrado por grupos en canciones y eventos>
                 // Seleccionar la colección adecuada según el filtro seleccionado
                 if (selectedFilter === "users") {
                     query = firestore.collection("users");
                 } else if (selectedFilter === "groups") {
                     query = firestore.collection("groups");
                 } else if (selectedFilter === "songs") {
-                    query = firestore.collection("songs");
+                    // Mostrar solo las canciones del usuario
+                    query = firestore.collection("songs");  //.where("idUser", "==", currentUser.uid); ! Descomentar fuera de pruebas para restrigir los resultados
                 } else if (selectedFilter === "events") {
-                    query = firestore.collection("events");
+                    // Mostrar solo los eventos del usuario y ordenarlas por fecha
+                    query = firestore.collection("events").orderBy("date"); 
+                    // .where("idUser", "==", currentUser.uid); <!TODO: configurar indices en Firestore para realizar queries compuestas>
                 }
-    
-                // Obtener todos los documentos de la colección seleccionada
-                const querySnapshot = await query.get();
-    
+                
+
+                // Obtener documentos de la colección seleccionada, limitando 'users' y 'groups' a 5 para una carga inicial más rápida.
+                let querySnapshot = await query.get();
+                if (selectedFilter === "users" || selectedFilter === "groups") {
+                    querySnapshot = await query.limit(5).get();
+                }
+                
+
                 // Filtrar los resultados solo si hay texto de búsqueda
                 if (searchText) {
+                    querySnapshot = await query.get();
                     // Convertir los documentos a datos
                     const allResults = querySnapshot.docs.map((doc) => doc.data());
                     // Filtrar los resultados localmente según el texto de búsqueda
-                    const filteredResults = allResults.filter(result =>
-                        result.name.toLowerCase().includes(searchText.trim().toLowerCase()) // Buscar por nombre
-                        || result.surname.toLowerCase().includes(searchText.trim().toLowerCase()) // Buscar por apellido
-                        || result.email.toLowerCase().includes(searchText.trim().toLowerCase()) // Buscar por email
-                        
-                    );
+                    let filteredResults = [];
+                    if (selectedFilter === "users" || selectedFilter === "groups") {
+                        filteredResults = allResults.filter(result =>
+                            (result.name && result.name.toLowerCase().includes(searchText.trim().toLowerCase())) || // Buscar por nombre
+                            (result.surname && result.surname.toLowerCase().includes(searchText.trim().toLowerCase())) || // Buscar por apellido
+                            (result.email && result.email.toLowerCase().includes(searchText.trim().toLowerCase())) // Buscar por email
+                        );
+                    } else if (selectedFilter === "groups") {
+                        filteredResults = allResults.filter(result =>
+                            (result.nombre && result.nombre.toLowerCase().includes(searchText.trim().toLowerCase())) // Buscar por evento
+                        );
+                    } else if (selectedFilter === "events") {
+                        filteredResults = allResults.filter(result =>
+                            (result.event && result.event.toLowerCase().includes(searchText.trim().toLowerCase())) // Buscar por evento
+                        );
+                    } else if (selectedFilter === "songs") {
+                        filteredResults = allResults.filter(result =>
+                            (result.title && result.title.toLowerCase().includes(searchText.trim().toLowerCase())) // Buscar por título de canción
+                        );
+                    }
+
                     // Establecer los resultados filtrados en el estado
                     setSearchResults(filteredResults);
                     if (filteredResults.length === 0) {
@@ -66,12 +94,13 @@ function SearchBar({ showModal, handleCloseModal }) {
                 setError("Error al obtener los resultados: " + error.message);
             }
         };
-    
+
         // Ejecutar la función fetchData cuando el modal esté visible
         if (showModal) {
             fetchData();
         }
-    }, [showModal, selectedFilter, searchText]);
+    }, [showModal, selectedFilter, searchText, currentUser.uid]);
+
 
     // Función para cambiar el filtro seleccionado
     const handleFilterChange = (filter) => {
@@ -103,22 +132,33 @@ function SearchBar({ showModal, handleCloseModal }) {
 
     return (
         <Modal show={showModal} onHide={handleCloseModal} fullscreen>
-            <Modal.Header className="mx-2 gap-4" closeButton>
+            <Modal.Header className="gap-3">
+                {/**Botón para volver atrás */}
+                <Button
+                    type="button"
+                    variant="outline-dark"
+                    className="border-0 pb-2 pt-1"
+                    onClick={handleCloseModal}
+                >
+                    <ArrowLeft />
+                </Button>
+
                 <Form.Control
                     type="text"
                     placeholder="Buscar..."
                     value={searchText}
                     onChange={handleSearchChange}
-                    className="rounded-pill bg-body-tertiary"
+                    className="rounded-pill bg-body-secondary"
                 />
+
             </Modal.Header>
             <Modal.Body>
-                <div className="d-flex justify-content-center gap-3 mb-3">
+                <div className="row row-cols-auto justify-content-evenly gap-2 mb-3">
                     {/**Botones de filtro */}
                     {/**Filtro usuarios */}
                     <Badge
-                        bg={selectedFilter === "users" ? "success" : "secondary"}
-                        className="d-flex align-items-center gap-2 rounded-pill"
+                        bg={selectedFilter === "users" ? "info" : "body-secondary text-dark"}
+                        className="d-flex align-items-center gap-1 rounded-pill"
                         onClick={() => handleFilterChange("users")}
                         style={{ cursor: "pointer" }}
                     >
@@ -127,8 +167,8 @@ function SearchBar({ showModal, handleCloseModal }) {
 
                     {/**Filtro grupos */}
                     <Badge
-                        bg={selectedFilter === "groups" ? "success" : "secondary"}
-                        className="d-flex align-items-center gap-2 rounded-pill"
+                        bg={selectedFilter === "groups" ? "info" : "body-secondary text-dark"}
+                        className="d-flex align-items-center gap-1 rounded-pill"
                         onClick={() => handleFilterChange("groups")}
                         style={{ cursor: "pointer" }}
                     >
@@ -137,8 +177,8 @@ function SearchBar({ showModal, handleCloseModal }) {
 
                     {/**Filtro repertorio */}
                     <Badge
-                        bg={selectedFilter === "songs" ? "success" : "secondary"}
-                        className="d-flex align-items-center gap-2 rounded-pill"
+                        bg={selectedFilter === "songs" ? "info" : "body-secondary text-dark"}
+                        className="d-flex align-items-center gap-1 rounded-pill"
                         onClick={() => handleFilterChange("songs")}
                         style={{ cursor: "pointer" }}
                     >
@@ -147,8 +187,8 @@ function SearchBar({ showModal, handleCloseModal }) {
 
                     {/**Filtro eventos */}
                     <Badge
-                        bg={selectedFilter === "events" ? "success" : "secondary"}
-                        className="d-flex align-items-center gap-2 rounded-pill"
+                        bg={selectedFilter === "events" ? "info" : "body-secondary text-dark"}
+                        className="d-flex align-items-center gap-1 rounded-pill"
                         onClick={() => handleFilterChange("events")}
                         style={{ cursor: "pointer" }}
                     >
@@ -162,17 +202,87 @@ function SearchBar({ showModal, handleCloseModal }) {
                 {/**Lista de resultados */}
                 <ListGroup variant="flush">
                     {searchResults.map((result, index) => (
-                        <ListGroup.Item key={index} className="d-flex align-items-center w-100 py-3 gap-3">
-                            {getFilterIcon(selectedFilter)}
-                            <div className="d-grid">
-                                {result.name} {result.surname}
-                            <span className="rounded-pill bg-body-secondary small px-2">{result.email}</span>
-                            </div>
+                        <ListGroup.Item key={index} className="container">
+                            {/**Perfiles de usuario */}
+                            {selectedFilter === 'users' && (
+                                <Link className="link-unstyled text-reset text-decoration-none d-flex align-items-center gap-3"
+                                    to={`/perfil?usuario=${result.email}`}
+                                    onClick={handleCloseModal}
+                                    >
+                                    {getFilterIcon(selectedFilter)}
+                                    <div className="d-grid">
+                                        {result.name} {result.surname}
+                                        <span className="rounded-pill bg-body-secondary text-muted small px-2">{result.email}</span>
+                                    </div>
+                                </Link>
+                            )}
+
+                            {/**Agrupaciones musicales */}
+                            {selectedFilter === 'groups' && (
+                                <>
+                                    {getFilterIcon(selectedFilter)}
+                                    {result.nombre} -
+                                    Número de miembros: {result.nIntegrantes}
+                                </>
+                            )}
+
+                            {/**Repertorio */}
+                            {selectedFilter === 'songs' && (
+                                <>
+                                    {getFilterIcon(selectedFilter)}
+                                    Nombre de la cancion
+                                </>
+                            )}
+
+                            {/**Eventos */}
+                            {selectedFilter === 'events' && (
+                                <div className="d-grid">
+                                    {/**Mostrar la fecha */}
+                                    {result.date && (
+                                        <span className="small fw-semibold text-capitalize">
+                                            {result.date.toDate().toLocaleDateString('es-ES', {
+                                                weekday: 'long',
+                                                day: '2-digit',
+                                                month: 'long',
+                                                year: 'numeric',
+                                            })}
+                                        </span>
+                                    )}
+
+                                    <div className="row mt-2">
+                                        {/**Mostrar la hora */}
+                                        {result.date && (
+                                            <span className="col-auto me-1 small fw-semibold">
+                                                {result.date.toDate().toLocaleTimeString('es-ES', {
+                                                    hour: '2-digit',
+                                                    minute: '2-digit'
+                                                })}
+                                            </span>
+                                        )}
+
+                                        {/**Colorear según el tipo de evento */}
+                                        <OverlayTrigger
+                                            trigger={["hover", "focus"]}
+                                            placement="top"
+                                            overlay={<Tooltip id="tooltip">{result.event}</Tooltip>}
+                                        >
+                                            <span className={`col px-1 rounded-2 bg-${result.event === 'Concierto' ? 'warning' :
+                                                result.event === 'Ensayo' ? 'success' :
+                                                    'body-secondary'}`}>
+                                            </span>
+                                        </OverlayTrigger>
+
+                                        {/**Nombre del evento */}
+                                        <span className="col-auto">Nombre del evento</span>
+                                    </div>
+                                </div>
+                            )}
                         </ListGroup.Item>
                     ))}
                 </ListGroup>
-            </Modal.Body>
-        </Modal>
+
+            </Modal.Body >
+        </Modal >
     );
 }
 
