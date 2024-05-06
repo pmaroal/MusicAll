@@ -49,17 +49,18 @@ export function CreateUser() {
         setMaxDate(today);
     }, []);
 
-    // Estado para controlar la visibilidad del modal
-    const [showModal, setShowModal] = useState(false);
-
-    // Función para mostrar el modal de selección de fecha
-    const handleShowModal = () => { setShowModal(true); };
-
-    // Función para cerrar el modal de selección de fecha
-    const handleCloseModal = () => { setShowModal(false); };
-
     // Estado para los instrumentos seleccionados
     const [selectedInstruments, setSelectedInstruments] = useState([]);
+
+    // Función para manejar la selección / deselección de instrumentos y añadirlos al array
+    const handleInstrumentSelection = (instrument) => {
+        const isSelected = selectedInstruments.includes(instrument);
+        if (isSelected) {
+            setSelectedInstruments(prevInstruments => prevInstruments.filter(item => item !== instrument));
+        } else {
+            setSelectedInstruments(prevInstruments => [...prevInstruments, instrument]);
+        }
+    };
 
     // Función para manejar el envío del formulario
     const handleSubmit = async (e) => {
@@ -102,15 +103,14 @@ export function CreateUser() {
         error, // Mensaje de error
         setSelectedDate, // Función para establecer la fecha seleccionada
         setSelectedInstruments, // Función para establecer los instrumentos seleccionados
-        showModal, // Estado para mostrar u ocultar el modal
-        handleShowModal, // Función para mostrar el modal
-        handleCloseModal // Función para ocultar el modal
+        handleInstrumentSelection, // Maneja la selección de instrumentos en el modal
     };
 }
 
 
-/** Función EditUserData para editar los datos del usuario en la vista 'User'
- * Maneja la interacción con los campos del formulario (por ahora solo nombre y apellidos).
+/** Función EditUserData para editar los datos del usuario en la vista 'Profile'.
+ * Maneja la interacción con los campos del formulario (nombre, apellidos e instrumentos).
+ * Se podría ampliar permitiendo cambiar el email, contraseña o fecha de nacimiento.
  */
 export function EditUserData() {
     const { currentUser } = useAuth(); // Obtiene el usuario actual autenticado
@@ -118,6 +118,8 @@ export function EditUserData() {
 
     // Obtener datos del usuario y mensajes de error y confirmación
     const [account, setAccount] = useState(null);
+
+    // Estado para los mensajes de error y éxito
     const [error, setError] = useState("");
     const [message, setMessage] = useState("");
 
@@ -160,6 +162,7 @@ export function EditUserData() {
 
     // Función para activar el modo de edición del perfil
     const handleEdit = () => {
+        setMessage(false);
         setEditing(true);
     };
 
@@ -167,7 +170,7 @@ export function EditUserData() {
     const handleCancel = () => {
         setEditing(false);
     };
-    
+
     // Función para manejar los cambios en los campos del formulario de edición
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -177,13 +180,32 @@ export function EditUserData() {
         }));
     };
 
+    // Función para manejar la selección de instrumentos
+    const handleInstrumentChange = (instrument) => {
+        // Verifica si el instrumento ya está en la lista
+        if (editedAccount.selectedInstruments.includes(instrument)) {
+            // Si ya existe, lo elimina de la lista
+            setEditedAccount(prevAccount => ({
+                ...prevAccount,
+                selectedInstruments: prevAccount.selectedInstruments.filter(item => item !== instrument)
+            }));
+        } else {
+            // Si no agrega el instrumento a la lista
+            setEditedAccount(prevAccount => ({
+                ...prevAccount,
+                selectedInstruments: [...prevAccount.selectedInstruments, instrument]
+            }));
+        }
+    };
+
+
     // Función asincrónica para guardar los cambios realizados en el perfil del usuario
     async function handleSaveChanges() {
         try {
             const user = auth.currentUser;
             const updateData = {}; // Objeto para almacenar los datos actualizados del usuario
 
-            // Verifica si se han editado los campos de nombre y apellido
+            // Verifica si se han editado los campos de nombre y apellidos
             if (editedAccount.name !== undefined) {
                 updateData.name = editedAccount.name; // Actualiza el nombre del usuario en el objeto de datos actualizados
             }
@@ -192,19 +214,26 @@ export function EditUserData() {
                 updateData.surname = editedAccount.surname; // Actualiza el apellido del usuario en el objeto de datos actualizados
             }
 
+            // Verifica si se han modificado los instrumentos
+            if (editedAccount.selectedInstruments !== undefined) {
+                updateData.selectedInstruments = editedAccount.selectedInstruments; // Actualiza los instrumentos del usuario en el objeto de datos actualizados
+            }
+
             // Verifica si se han realizado cambios en los datos del usuario
             if (Object.keys(updateData).length > 0) {
                 await firestore.collection('users').doc(user.uid).update(updateData); // Actualiza los datos del usuario en la base de datos
+                setAccount(editedAccount); // Establece los datos del usuario con los datos editados
+                navigate("/mi-perfil"); // Redirecciona al usuario a su perfil
+                setEditing(false); // Desactiva el modo de edición
+                setMessage("Los datos se han actualizado correctamente."); // Mensaje de confirmación de la actualización exitosa
+            } else {
+                setMessage("No se realizaron cambios."); // Mensaje si no hay cambios para actualizar
             }
-
-            setAccount(editedAccount); // Establece los datos del usuario con los datos editados
-            navigate("/usuario"); // Redirecciona al usuario a su perfil
-            setEditing(false); // Desactiva el modo de edición
-            setMessage("Los datos se han actualizado correctamente."); // Mensaje de confirmación de la actualización exitosa
         } catch (error) {
             setError("Error al guardar los cambios."); // Mensaje de error si no se pueden guardar los cambios
         }
     }
+
 
 
     // Retorna los elementos necesarios para interactuar con el formulario de edición del perfil
@@ -217,6 +246,7 @@ export function EditUserData() {
         handleEdit, // Función para activar el modo de edición
         handleCancel, // Función para cancelar la edición
         handleChange, // Función para manejar cambios en los campos
+        handleInstrumentChange, // Función para manejar la selección de instrumentos
         handleSaveChanges, // Función para guardar los cambios
     }
 }
@@ -255,5 +285,8 @@ export function GetUserProfile() {
         fetchUserProfile();
     }, [location.search]);
 
-    return { userProfile, error };
+    return {
+        userProfile, // Datos del usuario buscado
+        error, // Mensaje de error
+    };
 }

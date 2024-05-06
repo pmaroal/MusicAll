@@ -75,7 +75,7 @@ function ModalAccount({ showModal, handleCloseModal }) {
           <button
             type="button"
             onClick={() => {
-              navigate("/usuario"); // Navega a la vista del perfil del usuario
+              navigate("/mi-perfil"); // Navega a la vista del perfil del usuario
               handleCloseModal(); // Cierra el modal después de hacer clic en el botón, si no sigue activo en la siguiente pantalla
             }}
             className="list-group-item text-start"

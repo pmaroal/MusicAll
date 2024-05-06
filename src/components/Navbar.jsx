@@ -83,7 +83,7 @@ function NavbarTop() {
         </Navbar.Brand>
       </Navbar>
 
-      <ModalAccount  showModal={showModalAccount} handleCloseModal={() => setShowModalAccount(false)} />
+      <ModalAccount showModal={showModalAccount} handleCloseModal={() => setShowModalAccount(false)} />
       <SearchBar showModal={showModalSearch} handleCloseModal={() => setShowModalSearch(false)} />
     </>
   );

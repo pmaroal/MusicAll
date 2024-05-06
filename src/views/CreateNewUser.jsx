@@ -1,8 +1,9 @@
-import React from "react";
-import { Form, Button, Card, Alert, Accordion, ListGroup, Modal } from "react-bootstrap";
+import React, { useState } from "react";
+import { Form, Button, Card, Alert, Modal } from "react-bootstrap";
 import { ArrowLeft } from "react-bootstrap-icons";
-import Calendar from 'react-calendar' // Importar paquete react-calendar para el widget del calendario (https://www.npmjs.com/package/react-calendar)
+import Calendar from 'react-calendar'; // Importar paquete react-calendar para el widget del calendario (https://www.npmjs.com/package/react-calendar)
 import 'react-calendar/dist/Calendar.css';
+import ModalInstruments from "../components/ModalInstruments";
 import { CreateUser } from "../controllers/UserController";
 
 export default function CreateNewUser() {
@@ -11,18 +12,17 @@ export default function CreateNewUser() {
         nameRef,
         surnameRef,
         selectedDate,
+        selectedInstruments,
         maxDate,
         handleSubmit,
         navigate,
         error,
         setSelectedDate,
-        setSelectedInstruments,
-        showModal,
-        handleShowModal,
-        handleCloseModal
+        handleInstrumentSelection,
     } = CreateUser();
 
-    // Hook de React Router para la navegación
+    const [showModalCalendar, setShowModalCalendar] = useState(false);
+    const [showModalInstruments, setShowModalInstruments] = useState(false);
 
     return (
         <>
@@ -60,7 +60,7 @@ export default function CreateNewUser() {
                             <Form.Label>Fecha de nacimiento</Form.Label>
 
                             {/**Botón para abrir el modal de selección de fecha */}
-                            <Button type="button" variant="light" className="text-start border" onClick={handleShowModal}>
+                            <Button type="button" variant="light" className="text-start border" onClick={() => setShowModalCalendar(true)}>
                                 {/**Si hay una fecha seleccionada, muestra la fecha en formato específico, de lo contrario, muestra un mensaje predeterminado */}
                                 {selectedDate ? selectedDate.toLocaleDateString("es-ES", {
                                     day: "2-digit",
@@ -70,50 +70,48 @@ export default function CreateNewUser() {
                             </Button>
 
                             {/**Modal de selección de fecha */}
-                            <Modal show={showModal} onHide={handleCloseModal} centered>
+                            <Modal show={showModalCalendar} onHide={() => setShowModalCalendar(false)} centered>
                                 <Modal.Header closeButton></Modal.Header>
 
                                 <Modal.Body>
                                     {/**Componente Calendar para seleccionar la fecha */}
                                     <Calendar
-                                        selected={selectedDate}
                                         onChange={(date) => setSelectedDate(date)}
-                                        dateFormat="dd/MM/yyyy"
+                                        value={selectedDate}
                                         maxDate={maxDate}
                                         minDate={new Date(1901, 0, 1)}
                                         locale="es"
-                                        className="container"
-                                        required
                                     />
-                                    <Button className="w-100 mt-3"
-                                        onClick={handleCloseModal}>
+                                    <Button className="w-100 mt-3" onClick={() => setShowModalCalendar(false)}>
                                         Confirmar
                                     </Button>
                                 </Modal.Body>
                             </Modal>
                         </Form.Group>
 
-                        {/**Acordeón de instrumentos disponibles */}
-                        <Accordion className="my-3">
-                            <Accordion.Header>Instrumentos</Accordion.Header>
-                            <Accordion.Body className="pt-1">
-                                <ListGroup variant="flush">
-                                    {/**Mapea los instrumentos disponibles y sus checkboxes */}
-                                    {["Guitarra", "Teclado", "Bajo", "Batería", "Trompeta"].map((instrument, index) => (
-                                        <ListGroup.Item key={index}>
-                                            <Form.Check
-                                                type="checkbox"
-                                                label={instrument}
-                                                onChange={() => setSelectedInstruments(prevInstruments => {
-                                                    const isSelected = prevInstruments.includes(instrument);
-                                                    return isSelected ? prevInstruments.filter(item => item !== instrument) : [...prevInstruments, instrument];
-                                                })}
-                                            />
-                                        </ListGroup.Item>
-                                    ))}
-                                </ListGroup>
-                            </Accordion.Body>
-                        </Accordion>
+                        {/**Campo de selección de instrumentos desde el modal ModalInstruments */}
+                        <Form.Group id="instruments" className="d-grid my-3">
+                            <Form.Label>Instrumentos</Form.Label>
+                            
+                            {/**El texto del botón varía dinámicamente para mostrar los instrumentos seleccionados */}
+                            <Button type="button" variant="light" className="text-start border" onClick={() => setShowModalInstruments(true)}>
+                                {selectedInstruments.length > 0 ? 
+                                    "Instrumentos seleccionados: " + selectedInstruments.join(", ")
+                                    : "No se han seleccionado instrumentos"
+                                }
+                            </Button>
+
+                            {/**Modal de selección de instrumentos */}
+                            <ModalInstruments
+                                showModal={showModalInstruments}
+                                handleCloseModal={() => setShowModalInstruments(false)}
+                                handleInstrumentSelection={handleInstrumentSelection}
+                                selectedInstruments={selectedInstruments}
+                            />
+
+                        </Form.Group>
+
+
 
                         {/**Botón de enviar el formulario */}
                         <div className="d-flex gap-3 mt-4">
