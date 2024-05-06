@@ -132,8 +132,8 @@ function ModalAccount({ showModal, handleCloseModal }) {
               handleDeleteAccount();  // Llama a la función para cerrar sesión
             }
           }}
-          variant="outline-danger"
-          className="btn-sm w-100 border-0"
+          variant="white"
+          className="text-danger btn-sm w-100 border-0"
           disabled={!account} // Lo deshabilita si no hay una cuenta iniciada
           >
           Eliminar cuenta
