@@ -10,7 +10,7 @@ import { firestore } from "../config/firebase";
  */
 function useAccountController() {
     // Obtiene el usuario actual y la función de cierre de sesión del servicio de autenticación
-    const { currentUser, logout, deleteAccount } = useAuth();
+    const { currentUser, logout, deleteAccount, setCurrentUser } = useAuth();
 
     // Estado para almacenar los datos de la cuenta del usuario
     const [account, setAccount] = useState(null);
@@ -85,7 +85,9 @@ function useAccountController() {
                 // Eliminar la cuenta del usuario en Firebase Authentication
                 await deleteAccount();
 
-                navigate("/"); // Redirige al usuario a la página de inicio
+                setCurrentUser(null);
+
+                navigate("/"); // Redirige al usuario a la página de inicio, como no tiene usuario registrado debería ir a /login
             }
         } catch (error) {
             setError("No se ha podido eliminar la cuenta"); // Mensaje de error en caso de fallo al eliminar la cuenta

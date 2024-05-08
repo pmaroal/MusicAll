@@ -41,6 +41,9 @@ export default function CreateNewUser() {
                 </Card.Header>
 
                 <Card.Body>
+                    {/**Muestra un mensaje de error si hay algún error durante el registro */}
+                    {error && <Alert variant="danger" className="text-center">{error}</Alert>}
+
                     {/**Formulario de registro */}
                     <Form onSubmit={handleSubmit}>
                         {/**Campo de nombre */}
@@ -75,7 +78,7 @@ export default function CreateNewUser() {
 
                                 <Modal.Body>
                                     {/**Componente Calendar para seleccionar la fecha */}
-                                    <Calendar
+                                    <Calendar className="container"
                                         onChange={(date) => setSelectedDate(date)}
                                         value={selectedDate}
                                         maxDate={maxDate}
@@ -92,10 +95,10 @@ export default function CreateNewUser() {
                         {/**Campo de selección de instrumentos desde el modal ModalInstruments */}
                         <Form.Group id="instruments" className="d-grid my-3">
                             <Form.Label>Instrumentos</Form.Label>
-                            
+
                             {/**El texto del botón varía dinámicamente para mostrar los instrumentos seleccionados */}
                             <Button type="button" variant="light" className="text-start border" onClick={() => setShowModalInstruments(true)}>
-                                {selectedInstruments.length > 0 ? 
+                                {selectedInstruments.length > 0 ?
                                     "Instrumentos seleccionados: " + selectedInstruments.join(", ")
                                     : "No se han seleccionado instrumentos"
                                 }
@@ -120,8 +123,6 @@ export default function CreateNewUser() {
                             </Button>
                         </div>
 
-                        {/**Muestra un mensaje de error si hay algún error durante el registro */}
-                        {error && <Alert variant="danger">{error}</Alert>}
                     </Form>
                 </Card.Body>
             </Card>

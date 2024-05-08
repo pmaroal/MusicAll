@@ -56,15 +56,15 @@ function SearchBar({ showModal, handleCloseModal }) {
                     const allResults = querySnapshot.docs.map((doc) => doc.data());
                     // Filtrar los resultados localmente según el texto de búsqueda
                     let filteredResults = [];
-                    if (selectedFilter === "users" || selectedFilter === "groups") {
+                    if (selectedFilter === "users") {
                         filteredResults = allResults.filter(result =>
-                            (result.name && result.name.toLowerCase().includes(searchText.trim().toLowerCase())) || // Buscar por nombre
-                            (result.surname && result.surname.toLowerCase().includes(searchText.trim().toLowerCase())) || // Buscar por apellido
-                            (result.email && result.email.toLowerCase().includes(searchText.trim().toLowerCase())) // Buscar por email
+                            (result.name && result.name.toLowerCase().includes(searchText.trim().toLowerCase())) // Buscar por nombre
+                            || (result.surname && result.surname.toLowerCase().includes(searchText.trim().toLowerCase())) // Buscar por apellido
+                            || (result.email && result.email.toLowerCase().includes(searchText.trim().toLowerCase())) // Buscar por email
                         );
                     } else if (selectedFilter === "groups") {
                         filteredResults = allResults.filter(result =>
-                            (result.nombre && result.nombre.toLowerCase().includes(searchText.trim().toLowerCase())) // Buscar por evento
+                            (result.nombre && result.nombre.toLowerCase().includes(searchText.trim().toLowerCase())) // Buscar por grupo
                         );
                     } else if (selectedFilter === "events") {
                         filteredResults = allResults.filter(result =>
@@ -212,7 +212,10 @@ function SearchBar({ showModal, handleCloseModal }) {
                                     {getFilterIcon(selectedFilter)}
                                     <div className="d-grid">
                                         {result.name} {result.surname}
+                                        {/**Muestra una badge si es tu propia cuenta */}
+                                        {result.uid === currentUser.uid && (<span className="badge bg-warning position-absolute end-0">Tu cuenta</span>)}
                                         <span className="rounded-pill bg-body-secondary text-muted small px-2">{result.email}</span>
+
                                     </div>
                                 </Link>
                             )}
@@ -266,7 +269,7 @@ function SearchBar({ showModal, handleCloseModal }) {
                                             placement="top"
                                             overlay={<Tooltip id="tooltip">{result.event}</Tooltip>}
                                         >
-                                            <span className={`col px-1 rounded-2 bg-${result.event === 'Concierto' ? 'warning' :
+                                            <span className={`col-auto px-1 rounded-2 bg-${result.event === 'Concierto' ? 'warning' :
                                                 result.event === 'Ensayo' ? 'success' :
                                                     'body-secondary'}`}>
                                             </span>

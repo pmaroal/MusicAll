@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from "react";
-import { Navbar, Nav, OverlayTrigger, Tooltip, Button } from "react-bootstrap";
+import { useLocation } from 'react-router-dom';
+import { Navbar, Nav, Button } from "react-bootstrap";
 import {
   PersonFill,
   Search,
   HouseFill,
   CalendarWeekFill,
   BellFill,
-  MusicNoteBeamed,
+  MusicNoteList,
+  PeopleFill,
 } from "react-bootstrap-icons";
 
 import ModalAccount from "./ModalConfig";
@@ -49,24 +51,33 @@ function NavbarTop() {
 
   return (
     <>
-      <Navbar className="navbar-top container-fluid justify-content-evenly bg-white " fixed="top" >
-        
+      <Navbar className="navbar-top container-fluid justify-content-center px-2 bg-white " fixed="top" >
+
         {/**Barra de búsqueda */}
-        <Nav className="container bg-body-secondary rounded-pill mx-3 px-3" >
+        <Nav className="w-100 bg-body-secondary rounded-pill ps-3 ms-3" >
           <Nav.Item
             onClick={() => setShowModalSearch(true)}
-            className="d-flex align-items-center w-100 gap-3 py-2 text-black-50"
+            className="d-flex align-items-center w-100 gap-3 py-2 text-muted"
           >
             <Search />
             Buscar
           </Nav.Item>
         </Nav>
 
+        {/* Botón para ir a la página de notificaciones */}
+        <Nav.Link href="/notificaciones" className="btn position-relative ms-3 me-4">
+          <BellFill size={"24px"} />
+          {/**Muestra una notificación aunque no haya
+           * TODO! corregirlo cuando se implementen las notificaciones
+           */}
+          <span className="badge rounded-circle bg-danger position-absolute top-0 start-100 translate-middle">1</span>
+        </Nav.Link>
+
         {/**Icono usuario */}
-        <Navbar.Brand className="ms-2 me-4">
+        <Navbar.Brand>
           <Button
             type="button"
-            variant="outline-dark"
+            variant="primary"
             onClick={() => setShowModalAccount(true)}
             style={{
               height: "35px",
@@ -91,59 +102,32 @@ function NavbarTop() {
 
 // Componente para la barra de navegación inferior
 function NavbarBottom() {
+  const location = useLocation();
+
   return (
-    <>
-      <Navbar
-        className="container bg-body-secondary mx-auto rounded-top-5"
-        fixed="bottom"
-      >
-        <Nav className="container justify-content-around">
-          {/* Botón para ir a la página de inicio */}
-          <OverlayTrigger
-            trigger={["hover", "focus"]}
-            placement="top"
-            overlay={<Tooltip id="tooltip">Inicio</Tooltip>}
-          >
-            <Nav.Link href="/" >
-              <HouseFill size={"24px"} />
-            </Nav.Link>
-          </OverlayTrigger>
+    <Navbar className=" bg-body-secondary mx-auto rounded-top-5" fixed="bottom">
+      <Nav className="container-fluid justify-content-around ">
+        {/* Botón para ir a la página de inicio */}
+        <Nav.Link href="/" className={location.pathname === '/' ? 'badge bg-primary-subtle rounded-pill py-2 px-4 active' : 'badge text-muted py-2 px-4'}>
+          <HouseFill size={"24px"} />
+        </Nav.Link>
 
-          {/* Botón para ir a la página de eventos */}
-          <OverlayTrigger
-            trigger={["hover", "focus"]}
-            placement="top"
-            overlay={<Tooltip id="tooltip">Eventos</Tooltip>}
-          >
-            <Nav.Link href="/eventos">
-              <CalendarWeekFill size={"24px"} />
-            </Nav.Link>
-          </OverlayTrigger>
+        {/* Botón para ir a la página de eventos */}
+        <Nav.Link href="/eventos" className={location.pathname === '/eventos' ? 'badge bg-primary-subtle rounded-pill py-2 px-4 active' : 'badge text-muted py-2 px-4'}>
+          <CalendarWeekFill size={"24px"} />
+        </Nav.Link>
 
-          {/* Botón para ir a la página de notificaciones */}
-          <OverlayTrigger
-            trigger={["hover", "focus"]}
-            placement="top"
-            overlay={<Tooltip id="tooltip">Notificaciones</Tooltip>}
-          >
-            <Nav.Link href="/notificaciones">
-              <BellFill size={"24px"} />
-            </Nav.Link>
-          </OverlayTrigger>
+        {/* Botón para ir a la página de repertorio */}
+        <Nav.Link href="/repertorio" className={location.pathname === '/repertorio' ? 'badge bg-primary-subtle rounded-pill py-2 px-4 active' : 'badge text-muted py-2 px-4'}>
+          <MusicNoteList size={"24px"} />
+        </Nav.Link>
 
-          {/* Botón para ir a la página de repertorio */}
-          <OverlayTrigger
-            trigger={["hover", "focus"]}
-            placement="top"
-            overlay={<Tooltip id="tooltip">Repertorio</Tooltip>}
-          >
-            <Nav.Link href="/repertorio">
-              <MusicNoteBeamed size={"24px"} />
-            </Nav.Link>
-          </OverlayTrigger>
-        </Nav>
-      </Navbar>
-    </>
+        {/* Botón para ir a la página de grupos */}
+        <Nav.Link href="/mis-grupos" className={location.pathname === '/mis-grupos' ? 'badge bg-primary-subtle rounded-pill py-2 px-4 active' : 'badge text-muted py-2 px-4'}>
+          <PeopleFill size={"24px"} />
+        </Nav.Link>
+      </Nav>
+    </Navbar>
   );
 }
 
