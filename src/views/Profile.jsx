@@ -152,8 +152,6 @@ export default function User() {
                         )}
                     </div>
                 </>
-            )
-            }
             )}
 
             {/**Mensaje si no hay usuario logeado */}
