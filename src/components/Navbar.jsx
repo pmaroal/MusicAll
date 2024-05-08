@@ -14,6 +14,7 @@ import {
 import ModalAccount from "./ModalConfig";
 import SearchBar from "./SearchBar";
 
+
 // Componente para la barra de navegación superior
 function NavbarTop() {
   // Estado para controlar la visibilidad del modal de usuario

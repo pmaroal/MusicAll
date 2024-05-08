@@ -154,6 +154,7 @@ export default function User() {
                 </>
             )
             }
+            )}
 
             {/**Mensaje si no hay usuario logeado */}
             {!account && <p>No hay usuario logeado</p>}
