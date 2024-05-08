@@ -6,12 +6,14 @@ import Home from "./views/Home";
 import Events from "./views/Events";
 import Notifications from "./views/Notifications";
 import Repertoire from "./views/Repertoire";
+import Groups from "./views/Groups";
 import Profile from "./views/Profile";
 import InfoUser from './views/InfoUser';
 import LogIn from "./views/Login";
 import ForgotPass from "./views/ForgotPassword"
 import SignUp from "./views/Signup";
 import CreateNewUser from "./views/CreateNewUser";
+import CreateNewGroup from "./views/CreateNewGroup";
 
 // Importar el Container de react-bootstrap
 import { Container } from "react-bootstrap";
@@ -19,6 +21,7 @@ import { NavbarTop, NavbarBottom } from "./components/Navbar";
 
 // Importar AuthProvider que contiene las funciones relacionadas con el inicio de sesión
 import { AuthProvider, useAuth } from "./services/AuthService";
+
 
 function App() {
   // Obtener el nombre de la aplicación desde el manifest.json y ponerlo como título de la web
@@ -57,9 +60,12 @@ function App() {
             <Route path="/eventos" element={<PrivateRoute element={<Events />} />} />
             <Route path="/notificaciones" element={<PrivateRoute element={<Notifications />} />} />
             <Route path="/repertorio" element={<PrivateRoute element={<Repertoire />} />} />
+            <Route path="/mis-grupos" element={<PrivateRoute element={<Groups />} />} />
+            <Route path="/crear-grupo" element={<PrivateRoute element={<CreateNewGroup />} />} />
             <Route path="/mi-perfil" element={<PrivateRoute element={<Profile />} />} />
             {/* Ruta para el perfil de otro usuario */}
             <Route path="/perfil" element={<PrivateRoute element={<InfoUser />} />} />
+
 
 
             {/**Rutas de Login y registro */}

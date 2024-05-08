@@ -31,13 +31,12 @@ function ModalAccount({ showModal, handleCloseModal }) {
           {/**Foto de perfil 
            * TODO: añadir opción para cambiarla*/}
           <PersonFill
-            className="d-flex"
+            className="btn btn-primary"
             style={{
               height: "75px",
               width: "75px",
               padding: "10px",
               borderRadius: "50%",
-              border: "2px solid #000",
               display: "flex",
               justifyContent: "center",
               alignItems: "center",

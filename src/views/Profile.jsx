@@ -28,7 +28,8 @@ export default function User() {
             {/**Mostrar información del perfil si existe una cuenta */}
             {account && (
                 <>
-                    <h2 className='text-center py-3'>Información de perfil</h2>
+                    <h2 className='text-center'>Información de perfil</h2>
+
                     {/**Presentado en un Form para poder editarlo */}
                     <Form>
 
@@ -151,6 +152,8 @@ export default function User() {
                         )}
                     </div>
                 </>
+            )
+            }
             )}
 
             {/**Mensaje si no hay usuario logeado */}

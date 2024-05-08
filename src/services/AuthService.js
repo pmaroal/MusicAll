@@ -84,6 +84,7 @@ export function AuthProvider({ children }) {
     // Funciones que se van a retornar al restod e la app
     const value = {
         currentUser,
+        setCurrentUser,
         login,
         signup,
         logout,

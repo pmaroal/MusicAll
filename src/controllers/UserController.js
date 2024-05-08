@@ -87,7 +87,7 @@ export function CreateUser() {
             navigate("/");
         } catch (error) {
             // Manejo de errores durante el registro
-            setError("Error al crear la cuenta.");
+            setError("Error al crear la cuenta: " + error);
         }
     }
 

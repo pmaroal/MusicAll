@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { Container, Card } from 'react-bootstrap';
 import useEventController from "../controllers/EventController";
 
@@ -6,8 +6,8 @@ export default function Home() {
   const { events, loading, error } = useEventController();
 
   return (
-    <Container className="py-4">
-      <h2 className="text-center">Inicio</h2>
+    <Container className="text-center">
+      <h2 className="">Inicio</h2>
       <Card>
         <Card.Body>
           <h3>Eventos Próximos</h3>

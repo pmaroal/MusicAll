@@ -6,9 +6,9 @@ export default function Signup() {
     const emailRef = useRef();
     const passwordRef = useRef();
     const passwordConfRef = useRef();
-    
+
     const navigate = useNavigate();
-    
+
     const [showPasswordWarning, setShowPasswordWarning] = useState(false);
     const [showPasswordConfWarning, setShowPasswordConfWarning] = useState(false);
     const [acceptedTerms, setAcceptedTerms] = useState(false);
@@ -32,10 +32,10 @@ export default function Signup() {
         if (!acceptedTerms) {
             return setError('Debes aceptar los términos y condiciones.');
         }
-        
+
         try {
             setError(""); //Limpiar registro de errores
-            
+
             // Redirigir al usuario a la vista de datos de usuario
             navigate("nuevo-usuario", {
                 state: {
@@ -43,7 +43,7 @@ export default function Signup() {
                     password: passwordRef.current.value
                 }
             });
-            
+
         } catch (error) {
             setError('Error al crear la cuenta.');
             return; // Salir de la función handleSubmit cuando ocurre un error
@@ -58,7 +58,7 @@ export default function Signup() {
             setShowPasswordWarning(false);
         }
     };
-    
+
     // Mostrar una alerta mientras se escribe la confirmación de contraseña si no coincide con la contraseña
     const handlePasswordConfirmationAlert = () => {
         if (passwordConfRef.current.value && passwordConfRef.current.value !== passwordRef.current.value) {
@@ -73,6 +73,10 @@ export default function Signup() {
             <Card className='shadow'>
                 <Card.Body>
                     <h2 className='text-center py-3'>Crear cuenta</h2>
+
+                    
+                    {error && <Alert variant="danger" className="text-center">{error}</Alert>}
+
                     <Form onSubmit={handleSubmit}>
                         {/**Campo email */}
                         <Form.Group id='email' className='my-2'>
@@ -95,7 +99,7 @@ export default function Signup() {
                         {/**Campo confirmación contraseña */}
                         <Form.Group id='password-confirmation' className='my-2'>
                             <Form.Label>Vuelve a escribir tu contraseña</Form.Label>
-                            <Form.Control type='password' ref={passwordConfRef} required  onChange={handlePasswordConfirmationAlert}/>
+                            <Form.Control type='password' ref={passwordConfRef} required onChange={handlePasswordConfirmationAlert} />
                             {showPasswordConfWarning && (
                                 <Form.Text className="text-danger">
                                     Las contraseñas no coinciden.
@@ -103,19 +107,18 @@ export default function Signup() {
                             )}
                         </Form.Group>
 
-                    {/**Checkbox de términos y condiciones */}
-                    <Form.Group id='terms' className='my-3'>
-                        <FormCheck>
-                            <FormCheck.Input type="checkbox" onChange={e => setAcceptedTerms(e.target.checked)} required />
-                            <FormCheck.Label className='small'>
-                                Acepto los <Link to={"/"}>términos y condiciones</Link> de <strong>MusicAll</strong>
-                            </FormCheck.Label>
-                        </FormCheck>
-                    </Form.Group>
+                        {/**Checkbox de términos y condiciones */}
+                        <Form.Group id='terms' className='my-3'>
+                            <FormCheck>
+                                <FormCheck.Input type="checkbox" onChange={e => setAcceptedTerms(e.target.checked)} required />
+                                <FormCheck.Label className='small'>
+                                    Acepto los <Link to={"/"}>términos y condiciones</Link> de <strong>MusicAll</strong>
+                                </FormCheck.Label>
+                            </FormCheck>
+                        </Form.Group>
 
                         <Button type='submit' className='w-100 my-2'>Continuar</Button>
 
-                        {error && <Alert variant="danger">{error}</Alert>}
                     </Form>
                 </Card.Body>
             </Card>
