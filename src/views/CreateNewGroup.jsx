@@ -4,31 +4,32 @@ import { ChevronLeft, ChevronRight, PersonCircle, PersonGear, Search, XLg } from
 import { useNavigate } from 'react-router-dom';
 import { CreateGroup } from '../controllers/MusicalGroupController';
 
-
+// Componente para crear un nuevo grupo en la pantalla '/crear-grupo'
 export default function CreateNewGroup() {
 
     const navigate = useNavigate();
 
+    // Llamar al Hook CreateGroup del MusicalGroupController para manejar el form y crear un nuevo grupo
     const {
-        step,
-        handleNextStep,
-        groupName,
-        setGroupName,
-        error,
-        members,
-        handleToggleMember,
-        searchInput,
-        handleSearchInputChange,
-        handleSearchInputBlur,
-        searchResults,
-        handleAddMember,
-        selectedEvents,
-        setSelectedEvents,
-        selectedSongs,
-        setSelectedSongs,
-        currentUser,
-        handlePreviousStep,
-        handleSubmit
+        step, // Paso en el que se encuentra el formulario
+        handleNextStep, // Función para manejar el avance del formulario
+        handlePreviousStep, // Función para manejar el retroceso del formulario
+        currentUser, // Usuario actual, por defecto será el admin del grupo
+        groupName, // Nombre de la agrupación musical creada
+        setGroupName, // Estado para almacenar el nombre del grupo
+        members, // Array con los emails de los músicos invitados
+        handleAddMember, // Función para añadir nuevos miembros al array 'members'
+        handleToggleMember, // Función para manejar los checkboxes del array 'members' y eliminarlos del array
+        searchInput, // Texto en la barra de búsqueda
+        handleSearchInputChange, // Actualiza los resultados del dropdown cuando se escribe en la barra de búsqueda
+        handleSearchInputBlur, // Esconde la barra de búsqueda cuando pierde el foco
+        searchResults, // Array con los resultados de la busqueda que se muestran en el dropdown
+        selectedEvents, //TODO! Por implementar
+        setSelectedEvents, //TODO! Por implementar
+        selectedSongs, //TODO! Por implementar
+        setSelectedSongs, //TODO! Por implementar
+        error, // Mensajes de error
+        handleSubmit // Envío del formulario
     } = CreateGroup();
 
     return (
@@ -82,7 +83,7 @@ export default function CreateNewGroup() {
                                  * Habría que buscar algún componente de React con nombres de ciudades o provincias de España.
                                  * Esto podría ser util: https://github.com/frontid/ComunidadesProvinciasPoblaciones
                                  */}
-                                 <hr/>
+                                <hr />
                                 <Alert variant='warning' className='mt-3 text-center'>Añadir más campos como estilo musical de la banda o localización</Alert>
                             </Form>
                         </>
@@ -135,7 +136,7 @@ export default function CreateNewGroup() {
                                         <Dropdown.Menu className='container'> {/**Lo he hecho container para que ocupe todo el ancho y quede mejor */}
                                             {/**Mapeo de resultados */}
                                             {searchResults.map((user) => (
-                                                <Dropdown.Item className='d-flex align-items-center gap-2'
+                                                <Dropdown.Item className='d-flex flex-wrap align-items-center gap-2'
                                                     key={user.email}
                                                     onClick={() => handleAddMember(user.email)}
                                                 >
@@ -166,7 +167,7 @@ export default function CreateNewGroup() {
                                         placeholder='Escribe el nombre del evento'
                                         value={selectedEvents}
                                         onChange={(e) => setSelectedEvents(e.target.value)}
-                                        disabled //Activarlo cuando se complete esta parte del código
+                                        disabled // TODO! Activarlo cuando se complete esta parte del código
                                     />
                                 </FormGroup>
                             </Form>
@@ -186,7 +187,7 @@ export default function CreateNewGroup() {
                                         placeholder='Escribe el nombre de la canción'
                                         value={selectedSongs}
                                         onChange={(e) => setSelectedSongs(e.target.value)}
-                                        disabled //Activarlo cuando se complete esta parte del código
+                                        disabled // TODO! Activarlo cuando se complete esta parte del código
                                     />
                                 </FormGroup>
                             </Form>
@@ -196,32 +197,27 @@ export default function CreateNewGroup() {
                     {/**Paso 5: Resumen general de toda la información del grupo */}
                     {step === 5 && (
                         <>
-                            <h3 className='text-center fw-semibold'>Resumen de tu agrupación musical</h3>
-                            {/**Administrador del grupo. Es el usuario registrado.
-                             * TODO! Añadir formas de añadir varios admins o eliminarlos
-                             */}
-                            <div className='mt-3 text-center'>
-                                <p className='d-inline-flex p-2 bg-info-subtle small border rounded-2 fw-semibold'>
-                                    Administrador: {currentUser.email}
-                                </p>
-                            </div>
+                            <h3 className='mb-4'>Resumen de tu agrupación musical</h3>
 
                             {/**Nombre de la agrupación musical */}
-                            <div className='my-2 border-bottom'>
-                                <strong>Nombre: </strong>
-                                {groupName}
+                            <div className='d-flex flex-wrap flex-row gap-3 justify-content-between my-2 border-bottom'>
+                                <p><strong>Nombre: </strong>{groupName}</p>
+                                <p>...</p>
+                                <p><strong>Fecha de creación: </strong>{new Date().toLocaleDateString()}</p>
                             </div>
 
-                            {/**TODO! Actualizar cuando se añadan más datos del grupo */}
+                            {/**TODO! Completar cuando se añadan más datos del grupo */}
 
                             {/**Lista de miembros invitados */}
                             <div className='my-2 border-bottom'>
                                 <strong>Miembros: </strong>
                                 <div className='d-flex flex-wrap justify-content-center  gap-3 my-3'>
 
-                                    {/**Añade al usuario actual a la visualización de la lista de miembros */}
+                                    {/**Administrador del grupo. Es el usuario registrado.
+                                     * TODO! Añadir formas de añadir varios admins o eliminarlos
+                                     */}
                                     <div className='col-auto text-center bg-warning-subtle border border-1 rounded-2 p-2'>
-                                        <PersonGear className='mb-1'/> {currentUser.email}
+                                        <PersonGear className='mb-1' /> {currentUser.email}
                                     </div>
 
                                     {/**Se puede mejorar creando tarjetas con la foto de perfil (si se implementa), instrumentos, etc. */}

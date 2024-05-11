@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from "../services/AuthService";
-import AccountModel from "../models/AccountModel";
+import UserModel from "../models/UserModel";
 import { firestore } from "../config/firebase";
 
 /**
@@ -33,13 +33,13 @@ function useAccountController() {
                     if (userDoc.exists) {
                         // Datos del usuario
                         const userData = userDoc.data();
-                        const { email, name, surname, birthDate, selectedInstruments, creationTime } = userData;
+                        const { email, name, surname, birthDate, instruments} = userData;
 
-                        // Crea una instancia de AccountModel con los datos del usuario
-                        const accountModel = new AccountModel(email, name, surname, birthDate, selectedInstruments, creationTime);
+                        // Crea una instancia de UserModel con los datos del usuario
+                        const userModel = new UserModel(email, name, surname, birthDate, instruments);
 
                         // Actualiza el estado con los datos de la cuenta del usuario
-                        setAccount(accountModel);
+                        setAccount(userModel);
 
                         // Mensaje de error si no se encuentran datos para el usuario
                     } else {
@@ -87,7 +87,7 @@ function useAccountController() {
 
                 setCurrentUser(null);
 
-                navigate("/"); // Redirige al usuario a la página de inicio, como no tiene usuario registrado debería ir a /login
+                navigate("/login"); // Redirige al usuario a la página de /login
             }
         } catch (error) {
             setError("No se ha podido eliminar la cuenta"); // Mensaje de error en caso de fallo al eliminar la cuenta

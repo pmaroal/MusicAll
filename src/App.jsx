@@ -35,7 +35,7 @@ function App() {
     const { currentUser } = useAuth();
   
     // Si no hay un usuario logueado, redirigir a /login
-    if (!currentUser) {
+    if (!currentUser || currentUser === null) {
       return <Navigate to="/login" replace />;
     }
     // Si hay un usuario logueado, ir a la vista de la url introducida e incorporar las barras de navegación superior e inferior

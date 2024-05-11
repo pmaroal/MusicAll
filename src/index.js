@@ -1,7 +1,8 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import Home from './App';
-import 'bootstrap/dist/css/bootstrap.min.css'
+import 'bootstrap/dist/css/bootstrap.min.css' // Importar bootstrap CSS
+import 'bootstrap/dist/js/bootstrap.bundle.min.js'; // Importar bootstrap JS
 import * as serviceWorkerRegistration from './serviceWorkerRegistration';
 import reportWebVitals from './reportWebVitals';
 
@@ -20,8 +21,9 @@ reportWebVitals();
 // If you want your app to work offline and load faster, you can change
 // unregister() to register() below. Note this comes with some pitfalls.
 // Learn more about service workers: https://cra.link/PWA
-if ("serviceWorker" in navigator) {
+/*if ("serviceWorker" in navigator) {
   serviceWorkerRegistration.register("sw.js");
-}
+}*/
+serviceWorkerRegistration.unregister();
 
 

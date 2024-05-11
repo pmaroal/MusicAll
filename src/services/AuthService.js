@@ -21,22 +21,26 @@ export function AuthProvider({ children }) {
 
     // Función para registrarse utilizando el servicio de autenticación de Firebase
     async function signup(email, password, userData) {
-        // Crea el usuario en Firebase Auth
-        const userCredential = await auth.createUserWithEmailAndPassword(email, password);
-        const user = userCredential.user;
+        try {
+            // Crea el usuario en Firebase Auth
+            const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+            const user = userCredential.user;
 
-        // Añade los datos adicionales del usuario a Firestore
-        await firestore.collection('users').doc(user.uid).set({
-            email: email,
-            uid: user.uid,
-            name: userData.name,
-            surname: userData.surname,
-            birthDate: userData.birthDate,
-            selectedInstruments: userData.selectedInstruments,
-            creationDate: new Date().toLocaleString(),
-        });
+            // Añade los datos adicionales del usuario a Firestore
+            await firestore.collection('users').doc(user.uid).set({
+                uid: user.uid,
+                email: email,
+                name: userData.name,
+                surname: userData.surname,
+                birthDate: userData.birthDate,
+                instruments: userData.instruments,
+                creationDate: userData.creationDate
+            });
 
-        return user; // Devuelve el usuario creado
+            return user; // Devuelve el usuario creado
+        } catch(error) {
+            console.log(error)
+        }
     }
 
 
