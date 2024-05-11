@@ -37,17 +37,17 @@ function SearchBar({ showModal, handleCloseModal }) {
                     query = firestore.collection("songs");  //.where("idUser", "==", currentUser.uid); ! Descomentar fuera de pruebas para restrigir los resultados
                 } else if (selectedFilter === "events") {
                     // Mostrar solo los eventos del usuario y ordenarlas por fecha
-                    query = firestore.collection("events").orderBy("date"); 
+                    query = firestore.collection("events").orderBy("date");
                     // .where("idUser", "==", currentUser.uid); <!TODO: configurar indices en Firestore para realizar queries compuestas>
                 }
-                
+
 
                 // Obtener documentos de la colección seleccionada, limitando 'users' y 'groups' a 5 para una carga inicial más rápida.
                 let querySnapshot = await query.get();
                 if (selectedFilter === "users" || selectedFilter === "groups") {
                     querySnapshot = await query.limit(5).get();
                 }
-                
+
 
                 // Filtrar los resultados solo si hay texto de búsqueda
                 if (searchText) {
@@ -208,7 +208,7 @@ function SearchBar({ showModal, handleCloseModal }) {
                                 <Link className="link-unstyled text-reset text-decoration-none d-flex align-items-center gap-3"
                                     to={`/perfil?usuario=${result.email}`}
                                     onClick={handleCloseModal}
-                                    >
+                                >
                                     {getFilterIcon(selectedFilter)}
                                     <div className="d-grid">
                                         {result.name} {result.surname}
@@ -222,11 +222,13 @@ function SearchBar({ showModal, handleCloseModal }) {
 
                             {/**Agrupaciones musicales */}
                             {selectedFilter === 'groups' && (
-                                <>
+                                <Link className="link-unstyled text-reset text-decoration-none d-flex align-items-center gap-3"
+                                    to={`/mis-grupos?nombre=${result.name}`}
+                                    onClick={handleCloseModal}
+                                >
                                     {getFilterIcon(selectedFilter)}
-                                    {result.nombre} -
-                                    Número de miembros: {result.nIntegrantes}
-                                </>
+                                    {result.name}
+                                </Link>
                             )}
 
                             {/**Repertorio */}

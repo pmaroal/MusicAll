@@ -4,6 +4,7 @@ import { auth, firestore } from "../config/firebase";
 import { useNavigate, useLocation } from "react-router-dom";
 import { registerLocale } from "react-datepicker";
 import { es } from 'date-fns/locale/es';
+import UserModel from "../models/UserModel";
 
 /**
  * Custom hook para gestionar las funciones CRUD para los usuarios:
@@ -35,7 +36,7 @@ export function CreateUser() {
     const surnameRef = useRef();
 
     // Estado para la fecha de nacimiento seleccionada
-    const [selectedDate, setSelectedDate] = useState(null);
+    const [selectedDate, setSelectedDate] = useState(new Date());
 
     // Estado para la fecha máxima permitida
     const [maxDate, setMaxDate] = useState(new Date());
@@ -69,18 +70,33 @@ export function CreateUser() {
             setError("");
 
             const { state } = location;
+            // Datos de la cuenta
             const email = state.email;
             const password = state.password;
 
-            // Registro del usuario con los datos proporcionados
-            await signup(email, password, {
-                // ! Mejorar el formato de capitalización (de esta forma no capitaliza segundos nombres o apellidos)
-                // Se puede usar la clase de Bootstrap text-capitalize para poner en mayús la primera letra de cada palabra, pero se guardaría en minúsculas en la db
-                name: nameRef.current.value.charAt(0).toUpperCase() + nameRef.current.value.slice(1),
-                surname: surnameRef.current.value.charAt(0).toUpperCase() + surnameRef.current.value.slice(1),
-                birthDate: selectedDate,
-                selectedInstruments: selectedInstruments
+            // Datos del usuario
 
+            // ! Mejorar el formato de capitalización (de esta forma no capitaliza segundos nombres o apellidos)
+            // Se puede usar la clase de Bootstrap text-capitalize para poner en mayús la primera letra de cada palabra, pero se guardaría en minúsculas en la db
+            const name = nameRef.current.value.charAt(0).toUpperCase() + nameRef.current.value.slice(1);
+            const surname = surnameRef.current.value.charAt(0).toUpperCase() + surnameRef.current.value.slice(1);
+            const birthDate = selectedDate.toLocaleDateString("es-ES", {
+                day: "2-digit",
+                month: "2-digit",
+                year: "numeric",
+            });
+            const instruments = selectedInstruments;
+
+            // Crea una instancia de UserModel con los datos del usuario
+            const newUser = new UserModel(email, name, surname, birthDate, instruments);
+
+            // Registro del usuario con los datos proporcionados a través del modelo
+            await signup(email, password, {
+                name: newUser.name,
+                surname: newUser.surname,
+                birthDate: newUser.birthDate,
+                instruments: newUser.instruments,
+                creationDate: newUser.creationDate,
             });
 
             // Redireccionar a inicio después de registrarse
@@ -117,7 +133,7 @@ export function EditUserData() {
     const navigate = useNavigate(); // Función de navegación de React Router
 
     // Obtener datos del usuario y mensajes de error y confirmación
-    const [account, setAccount] = useState(null);
+    const [user, setUser] = useState(null);
 
     // Estado para los mensajes de error y éxito
     const [error, setError] = useState("");
@@ -127,7 +143,7 @@ export function EditUserData() {
     const [editing, setEditing] = useState(false); // Estado para indicar si el usuario está editando el perfil
 
     // Estado para almacenar los datos editados del perfil
-    const [editedAccount, setEditedAccount] = useState({}); // Estado para almacenar los datos editados del perfil
+    const [editedUser, setEditedUser] = useState({}); // Estado para almacenar los datos editados del perfil
 
 
     // Efecto para obtener los datos del usuario al cargar el componente o al cambiar el usuario actual
@@ -144,13 +160,13 @@ export function EditUserData() {
                     // Verifica si el documento del usuario existe en Firestore
                     if (userDoc.exists) {
                         const userData = userDoc.data(); // Obtiene los datos del usuario del documento
-                        setAccount(userData); // Establece los datos del usuario
-                        setEditedAccount(userData); // Establece los datos editados del usuario
+                        setUser(userData); // Establece los datos del usuario
+                        setEditedUser(userData); // Establece los datos editados del usuario
                     } else {
                         setError("No se encontraron datos para este usuario"); // Mensaje de error si no se encuentran datos
                     }
                 } else {
-                    setAccount(null); // Establece los datos del usuario como nulos si no hay usuario autenticado
+                    setUser(null); // Establece los datos del usuario como nulos si no hay usuario autenticado
                 }
             } catch (error) {
                 setError("Error al cargar los datos del usuario"); // Mensaje de error si hay un error al cargar los datos del usuario
@@ -174,8 +190,8 @@ export function EditUserData() {
     // Función para manejar los cambios en los campos del formulario de edición
     const handleChange = (e) => {
         const { name, value } = e.target;
-        setEditedAccount(prevAccount => ({
-            ...prevAccount,
+        setEditedUser(prevData => ({
+            ...prevData,
             [name]: value
         }));
     };
@@ -183,17 +199,17 @@ export function EditUserData() {
     // Función para manejar la selección de instrumentos
     const handleInstrumentChange = (instrument) => {
         // Verifica si el instrumento ya está en la lista
-        if (editedAccount.selectedInstruments.includes(instrument)) {
+        if (editedUser.instruments.includes(instrument)) {
             // Si ya existe, lo elimina de la lista
-            setEditedAccount(prevAccount => ({
-                ...prevAccount,
-                selectedInstruments: prevAccount.selectedInstruments.filter(item => item !== instrument)
+            setEditedUser(prevData => ({
+                ...prevData,
+                instruments: prevData.instruments.filter(item => item !== instrument)
             }));
         } else {
             // Si no agrega el instrumento a la lista
-            setEditedAccount(prevAccount => ({
-                ...prevAccount,
-                selectedInstruments: [...prevAccount.selectedInstruments, instrument]
+            setEditedUser(prevData => ({
+                ...prevData,
+                instruments: [...prevData.instruments, instrument]
             }));
         }
     };
@@ -206,23 +222,23 @@ export function EditUserData() {
             const updateData = {}; // Objeto para almacenar los datos actualizados del usuario
 
             // Verifica si se han editado los campos de nombre y apellidos
-            if (editedAccount.name !== undefined) {
-                updateData.name = editedAccount.name; // Actualiza el nombre del usuario en el objeto de datos actualizados
+            if (editedUser.name !== undefined) {
+                updateData.name = editedUser.name; // Actualiza el nombre del usuario en el objeto de datos actualizados
             }
 
-            if (editedAccount.surname !== undefined) {
-                updateData.surname = editedAccount.surname; // Actualiza el apellido del usuario en el objeto de datos actualizados
+            if (editedUser.surname !== undefined) {
+                updateData.surname = editedUser.surname; // Actualiza el apellido del usuario en el objeto de datos actualizados
             }
 
             // Verifica si se han modificado los instrumentos
-            if (editedAccount.selectedInstruments !== undefined) {
-                updateData.selectedInstruments = editedAccount.selectedInstruments; // Actualiza los instrumentos del usuario en el objeto de datos actualizados
+            if (editedUser.instruments !== undefined) {
+                updateData.instruments = editedUser.instruments; // Actualiza los instrumentos del usuario en el objeto de datos actualizados
             }
 
             // Verifica si se han realizado cambios en los datos del usuario
             if (Object.keys(updateData).length > 0) {
                 await firestore.collection('users').doc(user.uid).update(updateData); // Actualiza los datos del usuario en la base de datos
-                setAccount(editedAccount); // Establece los datos del usuario con los datos editados
+                setUser(editedUser); // Establece los datos del usuario con los datos editados
                 navigate("/mi-perfil"); // Redirecciona al usuario a su perfil
                 setEditing(false); // Desactiva el modo de edición
                 setMessage("Los datos se han actualizado correctamente."); // Mensaje de confirmación de la actualización exitosa
@@ -234,12 +250,10 @@ export function EditUserData() {
         }
     }
 
-
-
     // Retorna los elementos necesarios para interactuar con el formulario de edición del perfil
     return {
-        account, // Datos del usuario
-        editedAccount, // Datos editados del usuario
+        user, // Datos del usuario
+        editedUser, // Datos editados del usuario
         error, // Mensaje de error
         message, // Mensaje de confirmación
         editing, // Estado de edición del perfil
@@ -257,6 +271,7 @@ export function EditUserData() {
  */
 export function GetUserProfile() {
     const [userProfile, setUserProfile] = useState(null);
+    const [userGroups, setUserGroups] = useState([]);
     const [error, setError] = useState('');
     const location = useLocation();
 
@@ -269,11 +284,24 @@ export function GetUserProfile() {
         const userEmail = getUserEmailFromURL();
 
         const fetchUserProfile = async () => {
+            setError("");
             try {
                 const userQuery = await firestore.collection("users").where("email", "==", userEmail).get();
                 if (!userQuery.empty) {
                     const userData = userQuery.docs[0].data();
                     setUserProfile(userData);
+
+                    // Obtener los grupos en los que el usuario actual es miembro
+                    const relRef = await firestore.collection("rel_group_user").where("userId", "==", userData.uid).get();
+                    const userGroupIds = relRef.docs.map(doc => doc.data().groupId);
+
+                    // Obtener los datos de los grupos en base a los IDs obtenidos
+                    const fetchedUserGroups = await Promise.all(userGroupIds.map(async (groupId) => {
+                        const groupRef = await firestore.collection("groups").doc(groupId).get();
+                        return { id: groupRef.id, ...groupRef.data() };
+                    }));
+                    setUserGroups(fetchedUserGroups);
+
                 } else {
                     setError("No se encontraron datos para este usuario");
                 }
@@ -285,8 +313,10 @@ export function GetUserProfile() {
         fetchUserProfile();
     }, [location.search]);
 
+
     return {
         userProfile, // Datos del usuario buscado
+        userGroups, // Grupos del usuario
         error, // Mensaje de error
     };
 }

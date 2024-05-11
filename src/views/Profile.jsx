@@ -9,24 +9,24 @@ import { PlusLg } from 'react-bootstrap-icons';
 export default function User() {
     const [showModalInstruments, setShowModalInstruments] = useState(false); // Estado para controlar la visibilidad del modal de instrumentos
 
-    // Utiliza el hook useUserController para obtener referencias, estados y funciones relacionadas con el controlador de usuario
+    // Llamar a la función EditUserData del controlador UserController
     const {
-        account,
-        editedAccount,
-        error,
-        message,
-        editing,
-        handleEdit,
-        handleCancel,
-        handleChange,
-        handleInstrumentChange,
-        handleSaveChanges,
+        user, // Datos del usuario actual
+        editedUser, // Datos editados del usuario
+        error, // Mensaje de error
+        message, // Mensajes informativos
+        editing, // Modo de edición
+        handleEdit, // Función para manejar el modo edición
+        handleCancel, // Función para cancelar el envío del formulario
+        handleChange, // Función para manejar los cambios en el formulario
+        handleInstrumentChange, // Función para manejar el cambio de instrumentos
+        handleSaveChanges, // Función para manejar el guardado de datos y envío del formulario
     } = EditUserData();
 
     return (
         <>
             {/**Mostrar información del perfil si existe una cuenta */}
-            {account && (
+            {user && (
                 <>
                     <h2 className='text-center'>Información de perfil</h2>
 
@@ -39,12 +39,12 @@ export default function User() {
                             <Form.Control
                                 type="email"
                                 name="email"
-                                value={editing ? editedAccount.email : account.email}
+                                value={editing ? editedUser.email : user.email}
                                 onChange={handleChange}
                                 disabled // TODO: Gestionar cambio de email usando AuthService
                             />
                             {/**Mostrar fecha de creación de la cuenta */}
-                            <Form.FloatingLabel className='text-center text-secondary small'>Creado en: {account.creationDate || "sin datos"}</Form.FloatingLabel>
+                            <Form.FloatingLabel className='text-center text-secondary small'>Creado en: {user.creationDate || "sin datos"}</Form.FloatingLabel>
                         </Form.Group>
 
                         {/**Campo de nombre */}
@@ -53,7 +53,7 @@ export default function User() {
                             <Form.Control
                                 type="text"
                                 name="name"
-                                value={editing ? editedAccount.name : account.name}
+                                value={editing ? editedUser.name : user.name}
                                 onChange={handleChange}
                                 disabled={!editing}
                             />
@@ -65,7 +65,7 @@ export default function User() {
                             <Form.Control
                                 type="text"
                                 name="surname"
-                                value={editing ? editedAccount.surname : account.surname}
+                                value={editing ? editedUser.surname : user.surname}
                                 onChange={handleChange}
                                 disabled={!editing}
                             />
@@ -77,7 +77,7 @@ export default function User() {
                             <Form.Control
                                 type="text"
                                 name="birthDate"
-                                value={account.birthDate.toDate().toLocaleDateString()}
+                                value={user.birthDate}
                                 disabled
                             />
                         </Form.Group>
@@ -93,14 +93,14 @@ export default function User() {
 
                         <tbody>
                             {/* Muestra los instrumentos guardados en la cuenta */}
-                            {!editing && account.selectedInstruments.map((instrument, index) => (
+                            {!editing && user.instruments.map((instrument, index) => (
                                 <tr key={index}>
                                     <td className='col-1 border-end'>{index + 1}</td>
                                     <td className='fw-semibold ps-3'>{instrument}</td>
                                 </tr>
                             ))}
-                            {/* Muestra solo los instrumentos de editedAccount en modo edición */}
-                            {editing && editedAccount.selectedInstruments.map((instrument, index) => (
+                            {/* Muestra solo los instrumentos de editedUser en modo edición */}
+                            {editing && editedUser.instruments.map((instrument, index) => (
                                 <tr key={index}>
                                     <td className='col-1 border-end'>{index + 1}</td>
                                     <td className='fw-semibold ps-3'>{instrument}</td>
@@ -132,7 +132,7 @@ export default function User() {
                         showModal={showModalInstruments}
                         handleCloseModal={() => setShowModalInstruments(false)}
                         handleInstrumentSelection={handleInstrumentChange}
-                        selectedInstruments={editedAccount.selectedInstruments}
+                        selectedInstruments={editedUser.instruments}
                     />
 
                     {/**Mostrar mensajes de error o éxito */}
@@ -152,12 +152,10 @@ export default function User() {
                         )}
                     </div>
                 </>
-            )
-            }
             )}
 
             {/**Mensaje si no hay usuario logeado */}
-            {!account && <p>No hay usuario logeado</p>}
+            {!user && <p>No hay usuario logeado</p>}
         </>
     );
 }

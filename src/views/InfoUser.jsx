@@ -2,15 +2,21 @@ import React from 'react';
 import { Alert, Table, Container, Card, Button } from 'react-bootstrap';
 import { GetUserProfile } from '../controllers/UserController';
 import { useAuth } from "../services/AuthService";
-import { Calendar2, Gift, PersonFill } from 'react-bootstrap-icons';
+import { Calendar2, Gift, PeopleFill, PersonFill } from 'react-bootstrap-icons';
 
 
 export default function UserProfile() {
-    const { userProfile, error } = GetUserProfile(); // Cargar el usuario de la búsqueda y mensaje de error de la función 'GetUserProfile' del controlador
+    const {
+        userProfile,
+        userGroups,
+        error
+    } = GetUserProfile(); // Cargar el usuario de la búsqueda y mensaje de error de la función 'GetUserProfile' del controlador
+
     const { currentUser } = useAuth(); // Cargar los datos del usuario actual
 
     return (
         <>
+
             {/**Mensajes de error */}
             {error && <Alert variant="danger">{error}</Alert>}
             {/**Si hay usuario, muestra sus datos */}
@@ -52,8 +58,8 @@ export default function UserProfile() {
                                         variant='dark'
                                         /**Va a tu perfil si es tu cuenta, o a inicio si no 
                                          * <TODO! implementar funciones para invitar a grupo> 
-                                         * */ 
-                                        href={userProfile.uid === currentUser.uid ? '/mi-perfil' : '/'} 
+                                         * */
+                                        href={userProfile.uid === currentUser.uid ? '/mi-perfil' : '/'}
                                     >
                                         {userProfile.uid === currentUser.uid ? 'Editar tu perfil' : 'Invitar a tu grupo'}
                                     </Button>
@@ -72,32 +78,49 @@ export default function UserProfile() {
                                 {/**Fecha de nacimiento */}
                                 <span className="text-muted">
                                     <Gift className='mb-1 me-2' />
-                                    Fecha de nacimiento: {userProfile.birthDate.toDate().toLocaleDateString() || 'sin datos'}
+                                    Fecha de nacimiento: {userProfile.birthDate || 'sin datos'}
                                 </span>
                             </div>
                         </Card.Header>
 
                         {/**Cuerpo con detalles de la cuenta */}
                         <Card.Body>
-                            {/**Grupos a los que pertenece <TODO! Implementar> */}
-                            <div>
+                            {/**Grupos */}
+                            <div className='mb-3'>
                                 <h4>Grupos</h4>
-                                <p>{userProfile.name} aún no pertenece a nigún grupo.</p>
+                                {userGroups.length > 0 ? (
+                                    <div className='d-flex flex-wrap justify-content-md-center gap-3'>
+                                        {/**Mapear todos los grupos
+                                         * TODO! Transformar en botones para poder navegar a los grupos
+                                         */}
+                                        {userGroups.map((group, index) => (
+                                            <div key={index} className='bg-body-tertiary border rounded-pill py-2 px-3'>
+                                                <PeopleFill className='mb-1 me-2'/> {group.name}
+                                            </div>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <p>{userProfile.name} aún no pertenece a ningún grupo.</p>
+                                )}
                             </div>
 
+
+
                             {/**Instrumentos del músico <TODO! Poner más bonito> */}
-                            <h4>Instrumentos</h4>
-                            {/**Mapea los instrumentos del array y los muestra en una tabla */}
-                            <Table bordered hover size="sm" className="mb-3">
-                                <tbody>
-                                    {userProfile.selectedInstruments.map((instrument, index) => (
-                                        <tr key={index}>
-                                            <td className="col-1 text-center">{index + 1}</td>
-                                            <td className="ps-2">{instrument}</td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </Table>
+                            <div className=''>
+                                <h4>Instrumentos</h4>
+                                {/**Mapea los instrumentos del array y los muestra en una tabla */}
+                                <Table bordered hover size="sm" className="mb-3">
+                                    <tbody>
+                                        {userProfile.instruments.map((instrument, index) => (
+                                            <tr key={index}>
+                                                <td className="col-1 text-center">{index + 1}</td>
+                                                <td className="ps-2">{instrument}</td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </Table>
+                            </div>
                         </Card.Body>
                     </Card>
                 </Container>

@@ -62,15 +62,20 @@ export default function CreateNewUser() {
                         <Form.Group id="birthday" className="d-grid my-3">
                             <Form.Label>Fecha de nacimiento</Form.Label>
 
-                            {/**Botón para abrir el modal de selección de fecha */}
-                            <Button type="button" variant="light" className="text-start border" onClick={() => setShowModalCalendar(true)}>
-                                {/**Si hay una fecha seleccionada, muestra la fecha en formato específico, de lo contrario, muestra un mensaje predeterminado */}
-                                {selectedDate ? selectedDate.toLocaleDateString("es-ES", {
+                            {/**Campo que abre el modal de selección de fecha */}
+                            <Form.Control 
+                                className="text-start border bg-body-tertiary "
+                                onClick={() => setShowModalCalendar(true)}
+                                // Si hay una fecha seleccionada, muestra la fecha en formato específico, de lo contrario, muestra un mensaje predeterminado
+                                value={ selectedDate ? selectedDate.toLocaleDateString("es-ES", {
                                     day: "2-digit",
                                     month: "2-digit",
                                     year: "numeric",
-                                }) : "Seleccionar una fecha"}
-                            </Button>
+                                }) : ""}
+                                placeholder="Seleccionar fecha de nacimiento"
+                                readOnly
+                                required
+                            />
 
                             {/**Modal de selección de fecha */}
                             <Modal show={showModalCalendar} onHide={() => setShowModalCalendar(false)} centered>
@@ -95,14 +100,14 @@ export default function CreateNewUser() {
                         {/**Campo de selección de instrumentos desde el modal ModalInstruments */}
                         <Form.Group id="instruments" className="d-grid my-3">
                             <Form.Label>Instrumentos</Form.Label>
-
-                            {/**El texto del botón varía dinámicamente para mostrar los instrumentos seleccionados */}
-                            <Button type="button" variant="light" className="text-start border" onClick={() => setShowModalInstruments(true)}>
-                                {selectedInstruments.length > 0 ?
-                                    "Instrumentos seleccionados: " + selectedInstruments.join(", ")
-                                    : "No se han seleccionado instrumentos"
-                                }
-                            </Button>
+                            <Form.Control 
+                                className="text-start border bg-body-tertiary "
+                                onClick={() => setShowModalInstruments(true)}
+                                // El texto del botón varía dinámicamente para mostrar los instrumentos seleccionados
+                                value={selectedInstruments ? selectedInstruments.join(', ') : []}
+                                placeholder="No se han seleccionado instrumentos"
+                                readOnly
+                            />
 
                             {/**Modal de selección de instrumentos */}
                             <ModalInstruments
