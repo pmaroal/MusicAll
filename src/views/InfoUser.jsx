@@ -1,8 +1,11 @@
-import React from 'react';
-import { Alert, Table, Container, Card, Button } from 'react-bootstrap';
+import React, { useEffect, useState } from 'react';
+import { Alert, Table, Container, Card, Button, Modal } from 'react-bootstrap';
 import { GetUserProfile } from '../controllers/UserController';
 import { useAuth } from "../services/AuthService";
 import { Calendar2, Gift, PeopleFill, PersonFill } from 'react-bootstrap-icons';
+import { EditGroup } from '../controllers/MusicalGroupController';
+import { useNavigate } from 'react-router-dom';
+import { firestore } from '../config/firebase';
 
 
 export default function UserProfile() {
@@ -12,7 +15,51 @@ export default function UserProfile() {
         error
     } = GetUserProfile(); // Cargar el usuario de la búsqueda y mensaje de error de la función 'GetUserProfile' del controlador
 
+    // Llamar al Hook EditGroup del MusicalGroupController para modificar los datos del grupo
+    const {
+        inviteUserToGroup, // función para añadir un nuevo miembro al grupo
+    } = EditGroup();
+
     const { currentUser } = useAuth(); // Cargar los datos del usuario actual
+
+    const navigate = useNavigate();
+    const [showModal, setShowModal] = useState(false);
+    const [groupsUserIsAdmin, setGroupsUserIsAdmin] = useState([]);
+
+
+    useEffect(() => {
+        const fetchGroupsUserIsAdmin = async () => {
+            try {
+                const querySnapshot = await firestore
+                    .collection("rel_group_user")
+                    .where("userId", "==", currentUser.uid)
+                    .where("role", "==", "admin")
+                    .get();
+
+                const groups = [];
+                querySnapshot.forEach(doc => {
+                    const groupId = doc.data().groupId;
+                    // Obtener el nombre del grupo desde la colección "groups" usando el ID del grupo
+                    firestore.collection("groups").doc(groupId).get()
+                        .then(groupDoc => {
+                            if (groupDoc.exists) {
+                                const groupName = groupDoc.data().name;
+                                groups.push({ id: groupId, name: groupName });
+                            }
+                        })
+                        .catch(error => {
+                            console.error("Error al obtener los datos del grupo:", error);
+                        });
+                });
+
+                setGroupsUserIsAdmin(groups);
+            } catch (error) {
+                console.error("Error al obtener los grupos del usuario: " + error);
+            }
+        };
+
+        fetchGroupsUserIsAdmin();
+    }, [currentUser]);
 
     return (
         <>
@@ -53,16 +100,15 @@ export default function UserProfile() {
 
                                 {/**Columna con botón de 'Invitar al grupo' o 'Editar tu perfil' (si es tu propia cuenta) */}
                                 <div className='col-auto ms-auto'>
-                                    <Button
-                                        type='button'
-                                        variant='dark'
-                                        /**Va a tu perfil si es tu cuenta, o a inicio si no 
-                                         * <TODO! implementar funciones para invitar a grupo> 
-                                         * */
-                                        href={userProfile.uid === currentUser.uid ? '/mi-perfil' : '/'}
-                                    >
-                                        {userProfile.uid === currentUser.uid ? 'Editar tu perfil' : 'Invitar a tu grupo'}
-                                    </Button>
+                                    {userProfile.uid === currentUser.uid ? (
+                                        <Button variant='dark' onClick={() => navigate('/mi-perfil')}>
+                                            Editar tu perfil
+                                        </Button>
+                                    ) : (
+                                        <Button variant='dark' onClick={() => setShowModal(true)}>
+                                            Invitar a tu grupo
+                                        </Button>
+                                    )}
                                 </div>
                             </div>
 
@@ -94,9 +140,14 @@ export default function UserProfile() {
                                          * TODO! Transformar en botones para poder navegar a los grupos
                                          */}
                                         {userGroups.map((group, index) => (
-                                            <div key={index} className='bg-body-tertiary border rounded-pill py-2 px-3'>
-                                                <PeopleFill className='mb-1 me-2'/> {group.name}
-                                            </div>
+                                            <Button
+                                                variant='light' 
+                                                key={index} 
+                                                className='rounded-pill border'
+                                                onClick={() => navigate(`/mis-grupos?nombre=${group.name}`)}
+                                            >
+                                                <PeopleFill className='mb-1 me-2' /> {group.name}
+                                            </Button>
                                         ))}
                                     </div>
                                 ) : (
@@ -125,6 +176,31 @@ export default function UserProfile() {
                     </Card>
                 </Container>
             )}
+            <Modal show={showModal} onHide={() => setShowModal(false)} centered>
+                <Modal.Header closeButton>
+                    <Modal.Title>Selecciona un grupo al que invitar</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    <div className='d-flex flex-row flex-wrap gap-3 justify-content-center '>
+                        {groupsUserIsAdmin.length > 0 ? (
+                            groupsUserIsAdmin.map(group => (
+                                <Button variant='primary' className='btn-lg rounded-pill fw-semibold shadow'
+                                    key={group.id}
+                                    onClick={() => {
+                                        inviteUserToGroup(userProfile.uid, group.id);
+                                        setShowModal(false);
+                                    }}
+                                >
+                                    {group.name}
+                                </Button>
+                            ))
+                        ) : (
+                            <Alert className='text-center'>Actualmente no administras ningún grupo</Alert>
+                        )}
+                    </div>
+
+                </Modal.Body>
+            </Modal>
         </>
     );
 }

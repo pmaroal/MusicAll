@@ -37,15 +37,14 @@ function SearchBar({ showModal, handleCloseModal }) {
                     query = firestore.collection("songs");  //.where("idUser", "==", currentUser.uid); ! Descomentar fuera de pruebas para restrigir los resultados
                 } else if (selectedFilter === "events") {
                     // Mostrar solo los eventos del usuario y ordenarlas por fecha
-                    query = firestore.collection("events").orderBy("date");
-                    // .where("idUser", "==", currentUser.uid); <!TODO: configurar indices en Firestore para realizar queries compuestas>
+                    query = firestore.collection("events").where("createdBy", "==", currentUser.uid);
                 }
 
 
-                // Obtener documentos de la colección seleccionada, limitando 'users' y 'groups' a 5 para una carga inicial más rápida.
+                // Obtener documentos de la colección seleccionada, limitando 'users' y 'groups' a 10 para una carga inicial más rápida.
                 let querySnapshot = await query.get();
                 if (selectedFilter === "users" || selectedFilter === "groups") {
-                    querySnapshot = await query.limit(5).get();
+                    querySnapshot = await query.limit(10).get();
                 }
 
 
@@ -245,23 +244,15 @@ function SearchBar({ showModal, handleCloseModal }) {
                                     {/**Mostrar la fecha */}
                                     {result.date && (
                                         <span className="small fw-semibold text-capitalize">
-                                            {result.date.toDate().toLocaleDateString('es-ES', {
-                                                weekday: 'long',
-                                                day: '2-digit',
-                                                month: 'long',
-                                                year: 'numeric',
-                                            })}
+                                            {result.date}
                                         </span>
                                     )}
 
                                     <div className="row mt-2">
                                         {/**Mostrar la hora */}
-                                        {result.date && (
+                                        {result.time && (
                                             <span className="col-auto me-1 small fw-semibold">
-                                                {result.date.toDate().toLocaleTimeString('es-ES', {
-                                                    hour: '2-digit',
-                                                    minute: '2-digit'
-                                                })}
+                                                {result.time}
                                             </span>
                                         )}
 
@@ -269,16 +260,19 @@ function SearchBar({ showModal, handleCloseModal }) {
                                         <OverlayTrigger
                                             trigger={["hover", "focus"]}
                                             placement="top"
-                                            overlay={<Tooltip id="tooltip">{result.event}</Tooltip>}
+                                            overlay={<Tooltip id="tooltip">{result.type}</Tooltip>}
                                         >
-                                            <span className={`col-auto px-1 rounded-2 bg-${result.event === 'Concierto' ? 'warning' :
-                                                result.event === 'Ensayo' ? 'success' :
-                                                    'body-secondary'}`}>
-                                            </span>
+                                            <span className={`col-auto px-1 rounded-2 
+                                                bg-${
+                                                    result.type === 'concierto' ? 'warning' 
+                                                    : result.type === 'ensayo' ? 'success'
+                                                    : 'body-secondary'
+                                                }`}
+                                            />
                                         </OverlayTrigger>
 
                                         {/**Nombre del evento */}
-                                        <span className="col-auto">Nombre del evento</span>
+                                        <span className="col-auto">{result.title}</span>
                                     </div>
                                 </div>
                             )}
