@@ -1,10 +1,12 @@
-export class EventModel {
-  constructor(date, event, idUser) {
-    this.date = new Date().toLocaleString();
-    this.event = event;
-    this.idUser = idUser;
+class EventModel {
+  constructor(title, type, createdBy, date, time, location) {
+    this.title = title;
+    this.type = type;
+    this.createdBy = createdBy;
+    this.date = date;
+    this.time = time;
+    this.location = location;
   }
 }
 
-// Add this line to export the class
 export default EventModel;

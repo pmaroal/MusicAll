@@ -351,6 +351,36 @@ export function EditGroup() {
         }));
     };
 
+    const inviteUserToGroup = async (userId, groupId) => {
+        try {
+            // Verifica si el usuario ya está en el grupo
+            const isUserInGroup = groupMembers[groupId]?.some(member => member.id === userId);
+            if (isUserInGroup) {
+                console.log("El usuario ya está en el grupo.");
+                return; // No se envía la invitación si el usuario ya está en el grupo
+            }
+    
+            // Añade una nueva entrada en la colección 'rel_group_user' para invitar al usuario al grupo
+            await firestore.collection("rel_group_user").add({
+                userId: userId,
+                groupId: groupId,
+                role: "",
+            });
+    
+            // Actualiza los datos de los miembros del grupo después de la invitación
+            const updatedGroupMembers = { ...groupMembers };
+            if (updatedGroupMembers[groupId]) {
+                updatedGroupMembers[groupId].push({ id: userId }); // Añade al usuario a la lista de miembros del grupo
+                setGroupMembers(updatedGroupMembers); // Actualiza los miembros del grupo
+            }
+            
+        } catch (error) {
+            setError("Error al invitar al usuario al grupo: " + error); 
+        }
+    };
+    
+
+
     // Función para permitir que un miembro abandone el grupo (si no es el Admin)
     const leaveGroup = async (memberId, groupId) => {
         try {
@@ -372,6 +402,7 @@ export function EditGroup() {
                 setGroupMembers(updatedGroupMembers); // Actualiza los miembros del grupo
                 navigate("/mis-grupos"); // Navega de vuelta a la lista de grupos
             }
+            
         } catch (error) {
             setError("Error al salir del grupo: " + error); 
         }
@@ -380,6 +411,7 @@ export function EditGroup() {
     return {
         roleInBand, // Roles de los miembros en la banda
         handleRoleSelection, // Función para manejar la selección del rol de un miembro
+        inviteUserToGroup, // función para añadir un nuevo miembro al grupo
         leaveGroup, // Función para que un miembro abandone el grupo
         error, // Mensajes de error
     };

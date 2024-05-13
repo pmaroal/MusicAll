@@ -1,73 +1,342 @@
-import React, { useState } from "react";
-import { Container, Button } from 'react-bootstrap';
+import React, { useState } from 'react';
+import { Container, Button, Alert, Card, Modal, Form, Dropdown, ButtonGroup } from 'react-bootstrap';
 import Calendar from 'react-calendar';
-import useEventController from '../controllers/EventController';
+import 'react-calendar/dist/Calendar.css';
+import TimeRangePicker from '@wojtekmaj/react-timerange-picker';
+import '@wojtekmaj/react-timerange-picker/dist/TimeRangePicker.css';
+import { CalendarEvent, Clock, GeoAlt, People, PlusLg, XLg } from 'react-bootstrap-icons';
+import { CreateEvent, DeleteEvent, GetUserEvents } from '../controllers/EventController';
+import ModalConfirmation from '../components/ModalConfirmation';
 
 export default function Events() {
-  const [selectedDate, setSelectedDate] = useState(null); // Estado para la fecha seleccionada
+  const [showModal, setShowModal] = useState(false);
+  const [showConfirmation, setShowConfirmation] = useState(false);
+  const [selectedEventId, setSelectedEventId] = useState(null); // Estado para almacenar el ID del evento seleccionado
+
   const {
+    eventTitle,
+    setEventTitle,
+    selectedGroup,
+    setSelectedGroup,
+    eventType,
+    setEventType,
+    eventDate,
+    setEventDate,
+    eventTime,
+    setEventTime,
+    eventLocation,
+    setEventLocation,
+    handleCreateEvent,
+  } = CreateEvent();
+
+  const {
+    userGroups,
     events,
-    loading,
-    error,
-    addEvent, // Función para agregar evento
-    deleteEvent // Función para eliminar evento
-  } = useEventController();
+  } = GetUserEvents();
 
-  // Función para formatear la fecha
-  const formatDate = (date) => {
-    const day = date.getDate();
-    const month = date.getMonth() + 1;
-    const year = date.getFullYear();
-    return `${day}-${month}-${year}`;
-  };
+  const { deleteEvent } = DeleteEvent();
 
-  const handleCreateEvent = async () => {
-    if (!selectedDate) {
-      alert("Seleccione una fecha para el evento.");
-      return;
-    }
-
-    const eventText = prompt("Ingrese la descripción del evento:");
-    if (!eventText) {
-      return; // Manejar el caso sin texto de evento
-    }
-
-    await addEvent(eventText, selectedDate); // Llamar a la función para agregar evento
-    setSelectedDate(null); // Limpiar la fecha seleccionada
-  };
-
-  const handleDeleteEvent = async (eventId) => {
-    if (window.confirm("¿Estás seguro de que quieres eliminar este evento?")) {
-      await deleteEvent(eventId);
-    }
-  };
+  const today = new Date().toLocaleDateString("es-ES", {
+    day: "2-digit",
+    month: "long",
+    year: "numeric",
+  });
 
   return (
-    <Container className="py-4">
-      <h2 className="text-center mb-4">Eventos</h2>
-      <Calendar onChange={(newDate) => setSelectedDate(newDate)} value={selectedDate} className="mx-auto mb-4" />
+    <Container className="pt-3">
+      {/**Encabezado de la vista con el título y un botón para crear eventos */}
+      <div className='d-flex flex-wrap-reverse justify-content-center justify-content-sm-between gap-2 mb-2'>
+        <h2>Próximos Eventos</h2>
 
-      <div>
-        <h3>Eventos próximos:</h3>
-        {loading ? (
-          <p>Cargando eventos...</p>
-        ) : error ? (
-          <p>Error al cargar eventos: {error.message}</p>
-        ) : events.length > 0 ? (
-          <ul>
-            {events.map((event) => (
-              <li key={event.id}>
-                <strong>{event.date}</strong>: {event.event}
-                <Button variant="danger" onClick={() => handleDeleteEvent(event.id)}>Eliminar</Button>
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p>No hay eventos próximos.</p>
-        )}
+        {/**Botón 'Crear un nuevo Evento' */}
+        <Button variant='primary' className='ms-auto' onClick={() => setShowModal(true)}>
+          <PlusLg className='mb-1' /> Crear Evento
+        </Button>
       </div>
 
-      <Button variant="primary" onClick={handleCreateEvent}>Crear Evento</Button>
-    </Container>
+      {/**Si el usuario (o sus grupos) tienen algún evento */}
+      {events.length > 0 ? (
+        <>
+          {/**Separador con la fecha actual */}
+          <div className='d-flex flex-wrap gap-3 small text-muted align-items-center font-monospace'>
+            <hr className='flex-fill' />{today}<hr className='flex-fill' />
+          </div>
+
+          {/**Mapeo de todos los eventos del usuario y sus grupos */}
+          {events.map(event => (
+            <div key={event.id}>
+
+              {/**Próximos eventos */}
+              {event.date > today && (
+                <Card className='my-2' key={event.id}>
+                  {/**Encabezado del evento */}
+                  <Card.Header className='d-flex align-items-center justify-content-between gap-2'>
+                    <Card.Title className='mb-0'>
+                      {/**Tipo de evento (concierto = amarillo, ensayo = verde) */}
+                      <span className={`px-1 me-2 rounded-2 bg-${event.type === 'concierto' ? 'warning'
+                          : event.type === 'ensayo' ? 'success'
+                            : 'body-secondary'}`}>
+                      </span>
+                      {/**Nombre del evento */}
+                      {event.title}
+
+                      {/**Badge con el grupo del evento. <!TODO: No se que he tocado pero no se ve y antes si> */}
+                      <span className='badge bg-info-subtle mx-2 text-wrap text-reset'>
+                        {userGroups.find(group => group.id === event.groupId)?.name}
+                      </span>
+                    </Card.Title>
+
+                    {/**Botón para borrar el evento
+                     * Llama al modal confirmación
+                     * <!TODO: No se porque no funciona. Arreglar!>
+                     */}
+                    <Button variant='outline-secondary' className='btn-sm' onClick={() => { setShowConfirmation(true); setSelectedEventId(event.id); }}>
+                      <XLg className='mb-1' />
+                    </Button>
+                  </Card.Header>
+
+                  {/**Cuerpo de la Card con el resto de datos */}
+                  <Card.Body>
+                    <div className='d-flex flex-row flex-wrap align-items-center column-gap-4 row-gap-2'>
+                      {/**Comprueba si existen los datos antes de mostrarlos */}
+                      {event.date &&
+                        // Fecha del evento
+                        <span><CalendarEvent className='mb-1 me-1' /> {event.date}</span>
+                      }
+                      {event.time &&
+                        // Hora del evento
+                        <span><Clock className='mb-1 me-1' /> {event.time}</span>
+                      }
+                      {event.location &&
+                        // Ubicación del evento
+                        <span><GeoAlt className='mb-1 me-1' /> {event.location}</span>
+                      }
+                    </div>
+                  </Card.Body>
+                </Card>
+              )}
+
+              {/**Eventos pasados */}
+              {event.date < today && (
+                <>
+                  {/**Separador para los eventos antiguos */}
+                  <div className='d-flex flex-wrap gap-3 small text-muted align-items-center font-monospace'>
+                    <hr className='flex-fill' /> Eventos pasados <hr className='flex-fill' />
+                  </div>
+
+                  {/**Se le añade a las Card la clase bg-body-secondary para dar una representación visual */}
+                  <Card key={event.id} className='my-2 bg-body-secondary'>
+                    {/**Encabezado del evento */}
+                    <Card.Header className='d-flex align-items-center justify-content-between gap-2'>
+                      <Card.Title className='mb-0'>
+                        {/**Tipo de evento (concierto = amarillo, ensayo = verde) */}
+                        <span className={`px-1 me-2 rounded-2 bg-${event.type === 'concierto' ? 'warning'
+                            : event.type === 'ensayo' ? 'success'
+                              : 'body-secondary'}`}>
+                        </span>
+                        {/**Nombre del evento */}
+                        {event.title}
+
+                        {/**Badge con el grupo del evento. <!TODO: No se que he tocado pero no se ve y antes si> */}
+                        <span className='badge bg-info-subtle mx-2 text-wrap text-reset'>
+                          {userGroups.find(group => group.id === event.groupId)?.name}
+                        </span>
+                      </Card.Title>
+
+                      {/**Botón para borrar el evento
+                     * Llama al modal confirmación
+                     * <!TODO: No se porque no funciona. Arreglar!>
+                     */}
+                      <Button variant='outline-secondary' className='btn-sm' onClick={() => { setShowConfirmation(true); setSelectedEventId(event.id); }}>
+                        <XLg className='mb-1' />
+                      </Button>
+                    </Card.Header>
+
+                    {/**Cuerpo de la Card con el resto de datos */}
+                    <Card.Body>
+                      <div className='d-flex flex-row flex-wrap align-items-center column-gap-4 row-gap-2'>
+                        {/**Comprueba si existen los datos antes de mostrarlos */}
+                        {event.date &&
+                          // Fecha del evento
+                          <span><CalendarEvent className='mb-1 me-1' /> {event.date}</span>
+                        }
+                        {event.time &&
+                          // Hora del evento
+                          <span><Clock className='mb-1 me-1' /> {event.time}</span>
+                        }
+                        {event.location &&
+                          // Ubicación del evento
+                          <span><GeoAlt className='mb-1 me-1' /> {event.location}</span>
+                        }
+                      </div>
+                    </Card.Body>
+                  </Card>
+                </>
+              )}
+
+
+              {/**Llamada al modal de confirmación (para eliminar el evento)
+               * <!TODO: el codigo me parece correcto, no se que error hay y porque no recibe el valor del id correctamente>
+               */}
+              <ModalConfirmation
+                showModal={showConfirmation}
+                closeModal={() => setShowConfirmation(false)}
+                action={() => { deleteEvent(selectedEventId); setShowConfirmation(false); }}
+                actionTxt={<>
+                  eliminar el evento
+                  <span className='text-nowrap text-decoration-underline mx-1'>{event.title}</span>
+                  <span className='d-grid'>{selectedEventId}</span></>}
+              />
+            </div>
+          ))}
+        </>
+      ) : (
+        // Si no hay eventos muestra una alerta
+        <>
+          <hr />
+          <Alert key="no-events" variant="info" className="mt-3">
+            No tienes eventos próximos.
+          </Alert>
+        </>
+      )}
+
+
+      {/**Modal para crear un nuevo evento.
+       * Daba varios errores que no conseguía solucionar como componente independiente, por lo que lo incorporé en la vista
+       * <!TODO: Separarlo de la vista para que pueda ser reutilizado, ej. al crear un nuevo grupo y añadir eventos iniciales>
+       */}
+      <Modal show={showModal} onHide={() => setShowModal(false)} scrollable>
+
+        {/**Formulario de 'crear nuevo evento' */}
+        <Form>
+          <Modal.Header className='d-flex pb-1' closeButton>
+            {/**El título del evento se añade en el encabezado.
+             * No consigo que sea 'required', se envía el formulario sin errores aunque no haya nada escrito
+             */}
+            <Form.Group controlId="eventTitle" className='flex-fill me-3'>
+              <Form.Control
+                type="text"
+                value={eventTitle}
+                placeholder='Título'
+                onChange={(e) => setEventTitle(e.target.value)}
+                autoFocus
+                className='border-0 fs-5 fw-semibold'
+                required
+              />
+            </Form.Group>
+          </Modal.Header>
+
+          {/**Cuerpo del modal con detalles del evento
+           * Al poner el campo de title en el header no funcionaba el 'scrollable' correctamente. El estilo inline lo corrige
+           */}
+          <Modal.Body style={{ maxHeight: 'calc(100vh - 200px)', overflowY: 'auto' }}>
+
+            {/**Campo de grupo asociado al evento */}
+            <Form.Group controlId="selectGroup" className='d-flex flex-wrap align-items-center column-gap-3 mb-3'>
+              <Form.Label><People /></Form.Label>
+              
+              {/**Dropdown con los grupos del usuario*/}
+              <Dropdown onSelect={(e) => setSelectedGroup(e)} className='flex-fill me-sm-3'>
+                <Dropdown.Toggle id="dropdown-basic" variant="outline-dark" className='w-100 rounded-pill me-sm-3 border-secondary'>
+                  {selectedGroup ? userGroups.find(group => group.id === selectedGroup)?.name : 'Seleccionar grupo...'}
+                </Dropdown.Toggle>
+
+                <Dropdown.Menu className='w-100'>
+                  {userGroups.map(group => (
+                    <Dropdown.Item key={group.id} eventKey={group.id} className='text-center'>{group.name}</Dropdown.Item>
+                  ))}
+                  <Dropdown.Divider />
+                  <Dropdown.Item onClick={() => setSelectedGroup("")} className="text-center small py-0 font-monospace">
+                    Reset
+                  </Dropdown.Item>
+                </Dropdown.Menu>
+              </Dropdown>
+            </Form.Group>
+
+            {/**Campo de tipo de evento */}
+            <Form.Group controlId="eventType" className='mb-3'>
+              <ButtonGroup className='d-flex justify-content-around gap-3'>
+                {/**Button de 'Ensayos' */}
+                <Button 
+                  variant={eventType === 'ensayo' ? 'success' : 'outline-secondary'} 
+                  className="rounded-pill fw-semibold"
+                  onClick={() => setEventType('ensayo')}
+                >
+                  Ensayo
+                </Button>
+
+                {/**Button de 'Conciertos' */}
+                <Button 
+                  variant={eventType === 'concierto' ? 'warning' : 'outline-secondary'}
+                  className="rounded-pill fw-semibold"
+                  onClick={() => setEventType('concierto')}
+                >
+                  Concierto
+                </Button>
+              </ButtonGroup>
+            </Form.Group>
+
+            {/**Campo para la fecha, usando el componente react/calendar */}
+            <Form.Group controlId="eventDate" className='mb-3'>
+              <Calendar 
+                onChange={setEventDate}
+                value={eventDate.toDateString()}
+                minDate={new Date()} // No se pueden crear nuevos eventos anteriores a la fecha actual
+                className='mx-auto'
+              />
+            </Form.Group>
+
+            {/**Campo para la hora */}
+            <Form.Group controlId="eventTime" className='d-flex flex-wrap column-gap-3 mb-3'>
+              <Form.Label><Clock /></Form.Label>
+              {/**Componente TimeRangePicker (es bastante feo, pero funciona) */}
+              <TimeRangePicker
+                onChange={setEventTime}
+                value={eventTime}
+                className='flex-fill text-center me-sm-3'
+                format='HH:mm'
+                maxTime="23:59"
+                locale='ES-es'
+                disableClock
+              />
+            </Form.Group>
+
+            {/**Campo para la ubicación del evento */}
+            <Form.Group controlId="eventLocation" className='d-flex align-items-center column-gap-3 mb-3'>
+              <Form.Label><GeoAlt /></Form.Label>
+              <Form.Control 
+                type="text"
+                value={eventLocation}
+                placeholder='Ubicación'
+                onChange={(e) => setEventLocation(e.target.value)}
+                className='me-sm-3'
+              />
+            </Form.Group>
+          </Modal.Body>
+        </Form>
+
+        {/**Footer con botones de 'cancelar' y 'enviar form' */}
+        <Modal.Footer className='d-flex flex-wrap justify-content-around'>
+          {/**Botón cancelar */}
+          <Button 
+            variant="outline-secondary"
+            className='flex-fill border-0'
+            onClick={() => setShowModal(false)}
+          >
+            Cancelar
+          </Button>
+
+          {/**Botón enviar */}
+          <Button
+            type='submit'
+            variant="primary"
+            className='flex-fill'
+            onClick={() => { handleCreateEvent(); setShowModal(false); }}
+          >
+            Crear Evento
+          </Button>
+        </Modal.Footer>
+      </Modal>
+    </Container >
   );
 }
