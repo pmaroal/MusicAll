@@ -274,44 +274,57 @@ export function GetUserProfile() {
     const [userGroups, setUserGroups] = useState([]);
     const [error, setError] = useState('');
     const location = useLocation();
+    const { currentUser } = useAuth();
 
     useEffect(() => {
+        // Función para obtener el correo electrónico del usuario de la URL
         const getUserEmailFromURL = () => {
             const searchParams = new URLSearchParams(location.search);
             return searchParams.get('usuario');
         };
 
-        const userEmail = getUserEmailFromURL();
-
+        // Función para buscar el perfil del usuario y sus grupos
         const fetchUserProfile = async () => {
-            setError("");
+            setError(""); // Limpiar errores
             try {
-                const userQuery = await firestore.collection("users").where("email", "==", userEmail).get();
-                if (!userQuery.empty) {
-                    const userData = userQuery.docs[0].data();
-                    setUserProfile(userData);
+                let userEmail = getUserEmailFromURL();
+                
+                // Si no se encontró un correo electrónico en la URL, se usa el del usuario actual
+                if (!userEmail && currentUser) {
+                    userEmail = currentUser.email;
+                }
 
-                    // Obtener los grupos en los que el usuario actual es miembro
-                    const relRef = await firestore.collection("rel_group_user").where("userId", "==", userData.uid).get();
-                    const userGroupIds = relRef.docs.map(doc => doc.data().groupId);
+                if (userEmail) {
+                    // Consultar el perfil del usuario en base al correo electrónico
+                    const userQuery = await firestore.collection("users").where("email", "==", userEmail).get();
+                    if (!userQuery.empty) {
+                        const userData = userQuery.docs[0].data();
+                        setUserProfile(userData);
 
-                    // Obtener los datos de los grupos en base a los IDs obtenidos
-                    const fetchedUserGroups = await Promise.all(userGroupIds.map(async (groupId) => {
-                        const groupRef = await firestore.collection("groups").doc(groupId).get();
-                        return { id: groupRef.id, ...groupRef.data() };
-                    }));
-                    setUserGroups(fetchedUserGroups);
+                        // Obtener los grupos en los que el usuario es miembro
+                        const relRef = await firestore.collection("rel_group_user").where("userId", "==", userData.uid).get();
+                        const userGroupIds = relRef.docs.map(doc => doc.data().groupId);
 
+                        // Obtener los datos de los grupos en base a los IDs obtenidos
+                        const fetchedUserGroups = await Promise.all(userGroupIds.map(async (groupId) => {
+                            const groupRef = await firestore.collection("groups").doc(groupId).get();
+                            return { id: groupRef.id, ...groupRef.data() };
+                        }));
+                        setUserGroups(fetchedUserGroups);
+
+                    } else {
+                        setError("No se encontraron datos para este usuario");
+                    }
                 } else {
-                    setError("No se encontraron datos para este usuario");
+                    setError("No se pudo obtener el correo electrónico del usuario");
                 }
             } catch (error) {
                 setError("Error al cargar el perfil del usuario");
             }
         };
 
-        fetchUserProfile();
-    }, [location.search]);
+        fetchUserProfile(); // Llamar a la función de búsqueda del perfil del usuario
+    }, [location.search, currentUser]);
 
 
     return {
@@ -320,3 +333,4 @@ export function GetUserProfile() {
         error, // Mensaje de error
     };
 }
+

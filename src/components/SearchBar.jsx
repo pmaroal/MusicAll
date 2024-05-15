@@ -222,7 +222,7 @@ function SearchBar({ showModal, handleCloseModal }) {
                             {/**Agrupaciones musicales */}
                             {selectedFilter === 'groups' && (
                                 <Link className="link-unstyled text-reset text-decoration-none d-flex align-items-center gap-3"
-                                    to={`/mis-grupos?nombre=${result.name}`}
+                                    to={`/grupo?nombre=${result.name}`}
                                     onClick={handleCloseModal}
                                 >
                                     {getFilterIcon(selectedFilter)}

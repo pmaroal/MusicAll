@@ -21,6 +21,7 @@ import { NavbarTop, NavbarBottom } from "./components/Navbar";
 
 // Importar AuthProvider que contiene las funciones relacionadas con el inicio de sesión
 import { AuthProvider, useAuth } from "./services/AuthService";
+import InfoGroup from "./views/InfoGroup";
 
 
 function App() {
@@ -61,6 +62,7 @@ function App() {
             <Route path="/notificaciones" element={<PrivateRoute element={<Notifications />} />} />
             <Route path="/repertorio" element={<PrivateRoute element={<Repertoire />} />} />
             <Route path="/mis-grupos" element={<PrivateRoute element={<Groups />} />} />
+            <Route path="/grupo" element={<PrivateRoute element={<InfoGroup />} />} />
             <Route path="/crear-grupo" element={<PrivateRoute element={<CreateNewGroup />} />} />
             <Route path="/mi-perfil" element={<PrivateRoute element={<Profile />} />} />
             {/* Ruta para el perfil de otro usuario */}

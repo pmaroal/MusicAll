@@ -278,7 +278,7 @@ export default function CreateNewGroup() {
                 </Card.Body>
 
                 {/**Footer con los botones 'Anterior', 'Siguiente' y 'Confirmar' que varían según el paso del formulario */}
-                <Card.Footer className='d-flex flex-wrap gap-3'>
+                <Card.Footer className='d-flex flex-wrap gap-2'>
                     {(step !== 1) && (
                         <Button variant='secondary' onClick={handlePreviousStep}>
                             <ChevronLeft className='mb-1' /> Anterior

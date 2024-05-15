@@ -1,17 +1,16 @@
 import React, { useState } from 'react';
-import { Container, Button, Alert, Card, Modal, Form, Dropdown, ButtonGroup } from 'react-bootstrap';
+import { Container, Button, Alert, Card, Modal, Form, Dropdown, ButtonGroup, OverlayTrigger, Tooltip } from 'react-bootstrap';
 import Calendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
 import TimeRangePicker from '@wojtekmaj/react-timerange-picker';
 import '@wojtekmaj/react-timerange-picker/dist/TimeRangePicker.css';
-import { CalendarEvent, Clock, GeoAlt, People, PlusLg, XLg } from 'react-bootstrap-icons';
+import { CalendarEvent, Clock, GeoAlt, PencilSquare, People, PlusLg, XLg } from 'react-bootstrap-icons';
 import { CreateEvent, DeleteEvent, GetUserEvents } from '../controllers/EventController';
 import ModalConfirmation from '../components/ModalConfirmation';
 
 export default function Events() {
   const [showModal, setShowModal] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
-  const [selectedEventId, setSelectedEventId] = useState(null); // Estado para almacenar el ID del evento seleccionado
 
   const {
     eventTitle,
@@ -33,8 +32,6 @@ export default function Events() {
     userGroups,
     events,
   } = GetUserEvents();
-
-  const { deleteEvent } = DeleteEvent();
 
   const today = new Date().toLocaleDateString("es-ES", {
     day: "2-digit",
@@ -73,10 +70,16 @@ export default function Events() {
                   <Card.Header className='d-flex align-items-center justify-content-between gap-2'>
                     <Card.Title className='mb-0'>
                       {/**Tipo de evento (concierto = amarillo, ensayo = verde) */}
-                      <span className={`px-1 me-2 rounded-2 bg-${event.type === 'concierto' ? 'warning'
+                      <OverlayTrigger
+                        trigger={["hover", "focus"]}
+                        placement="top"
+                        overlay={<Tooltip id="tooltip" className='text-capitalize'>{event.type}</Tooltip>}
+                      >
+                        <span className={`px-1 me-2 rounded-2 bg-${event.type === 'concierto' ? 'warning'
                           : event.type === 'ensayo' ? 'success'
                             : 'body-secondary'}`}>
-                      </span>
+                        </span>
+                      </OverlayTrigger>
                       {/**Nombre del evento */}
                       {event.title}
 
@@ -86,13 +89,26 @@ export default function Events() {
                       </span>
                     </Card.Title>
 
-                    {/**Botón para borrar el evento
-                     * Llama al modal confirmación
-                     * <!TODO: No se porque no funciona. Arreglar!>
-                     */}
-                    <Button variant='outline-secondary' className='btn-sm' onClick={() => { setShowConfirmation(true); setSelectedEventId(event.id); }}>
-                      <XLg className='mb-1' />
-                    </Button>
+
+                    <ButtonGroup className='gap-2'>
+                      <Button
+                        variant='success'
+                        className='btn-sm rounded-2'
+                      >
+                        <PencilSquare className='mb-1' />
+                      </Button>
+
+                      {/**Botón para borrar el evento. Llama al modal confirmación
+                       * <!TODO: No se porque no funciona. Arreglar!>
+                       */}
+                      <Button 
+                        variant='danger'
+                        className='btn-sm rounded-2'
+                        onClick={() => setShowConfirmation(ModalConfirmation)}
+                      >
+                        <XLg className='mb-1' />
+                      </Button>
+                    </ButtonGroup>
                   </Card.Header>
 
                   {/**Cuerpo de la Card con el resto de datos */}
@@ -116,7 +132,10 @@ export default function Events() {
                 </Card>
               )}
 
-              {/**Eventos pasados */}
+
+              {/**Eventos pasados 
+               * <!TODO: Mejorarlo para que no haya que repetir el código>
+              */}
               {event.date < today && (
                 <>
                   {/**Separador para los eventos antiguos */}
@@ -128,29 +147,48 @@ export default function Events() {
                   <Card key={event.id} className='my-2 bg-body-secondary'>
                     {/**Encabezado del evento */}
                     <Card.Header className='d-flex align-items-center justify-content-between gap-2'>
-                      <Card.Title className='mb-0'>
-                        {/**Tipo de evento (concierto = amarillo, ensayo = verde) */}
+                    <Card.Title className='mb-0'>
+                      {/**Tipo de evento (concierto = amarillo, ensayo = verde) */}
+                      <OverlayTrigger
+                        trigger={["hover", "focus"]}
+                        placement="top"
+                        overlay={<Tooltip id="tooltip" className='text-capitalize'>{event.type}</Tooltip>}
+                      >
                         <span className={`px-1 me-2 rounded-2 bg-${event.type === 'concierto' ? 'warning'
-                            : event.type === 'ensayo' ? 'success'
-                              : 'body-secondary'}`}>
+                          : event.type === 'ensayo' ? 'success'
+                            : 'body-secondary'}`}>
                         </span>
-                        {/**Nombre del evento */}
-                        {event.title}
+                      </OverlayTrigger>
+                      {/**Nombre del evento */}
+                      {event.title}
 
-                        {/**Badge con el grupo del evento. <!TODO: No se que he tocado pero no se ve y antes si> */}
-                        <span className='badge bg-info-subtle mx-2 text-wrap text-reset'>
-                          {userGroups.find(group => group.id === event.groupId)?.name}
-                        </span>
-                      </Card.Title>
+                      {/**Badge con el grupo del evento. <!TODO: No se que he tocado pero no se ve y antes si> */}
+                      <span className='badge bg-info-subtle mx-2 text-wrap text-reset'>
+                        {userGroups.find(group => group.id === event.groupId)?.name}
+                      </span>
+                    </Card.Title>
 
-                      {/**Botón para borrar el evento
-                     * Llama al modal confirmación
-                     * <!TODO: No se porque no funciona. Arreglar!>
-                     */}
-                      <Button variant='outline-secondary' className='btn-sm' onClick={() => { setShowConfirmation(true); setSelectedEventId(event.id); }}>
+
+                    <ButtonGroup className='gap-2'>
+                      <Button
+                        variant='success'
+                        className='btn-sm rounded-2'
+                      >
+                        <PencilSquare className='mb-1' />
+                      </Button>
+
+                      {/**Botón para borrar el evento. Llama al modal confirmación
+                       * <!TODO: No se porque no funciona. Arreglar!>
+                       */}
+                      <Button 
+                        variant='danger'
+                        className='btn-sm rounded-2'
+                        onClick={() => setShowConfirmation(ModalConfirmation)}
+                      >
                         <XLg className='mb-1' />
                       </Button>
-                    </Card.Header>
+                    </ButtonGroup>
+                  </Card.Header>
 
                     {/**Cuerpo de la Card con el resto de datos */}
                     <Card.Body>
@@ -175,17 +213,15 @@ export default function Events() {
               )}
 
 
-              {/**Llamada al modal de confirmación (para eliminar el evento)
-               * <!TODO: el codigo me parece correcto, no se que error hay y porque no recibe el valor del id correctamente>
-               */}
+              {/**Llamada al modal de confirmación (para eliminar el evento) */}
               <ModalConfirmation
                 showModal={showConfirmation}
                 closeModal={() => setShowConfirmation(false)}
-                action={() => { deleteEvent(selectedEventId); setShowConfirmation(false); }}
+                action={() => {DeleteEvent(event.id); setShowConfirmation(false)} }
                 actionTxt={<>
                   eliminar el evento
                   <span className='text-nowrap text-decoration-underline mx-1'>{event.title}</span>
-                  <span className='d-grid'>{selectedEventId}</span></>}
+                  <span className='d-grid'>{event.id}</span></>}
               />
             </div>
           ))}
@@ -234,7 +270,7 @@ export default function Events() {
             {/**Campo de grupo asociado al evento */}
             <Form.Group controlId="selectGroup" className='d-flex flex-wrap align-items-center column-gap-3 mb-3'>
               <Form.Label><People /></Form.Label>
-              
+
               {/**Dropdown con los grupos del usuario*/}
               <Dropdown onSelect={(e) => setSelectedGroup(e)} className='flex-fill me-sm-3'>
                 <Dropdown.Toggle id="dropdown-basic" variant="outline-dark" className='w-100 rounded-pill me-sm-3 border-secondary'>
@@ -257,8 +293,8 @@ export default function Events() {
             <Form.Group controlId="eventType" className='mb-3'>
               <ButtonGroup className='d-flex justify-content-around gap-3'>
                 {/**Button de 'Ensayos' */}
-                <Button 
-                  variant={eventType === 'ensayo' ? 'success' : 'outline-secondary'} 
+                <Button
+                  variant={eventType === 'ensayo' ? 'success' : 'outline-secondary'}
                   className="rounded-pill fw-semibold"
                   onClick={() => setEventType('ensayo')}
                 >
@@ -266,7 +302,7 @@ export default function Events() {
                 </Button>
 
                 {/**Button de 'Conciertos' */}
-                <Button 
+                <Button
                   variant={eventType === 'concierto' ? 'warning' : 'outline-secondary'}
                   className="rounded-pill fw-semibold"
                   onClick={() => setEventType('concierto')}
@@ -278,7 +314,7 @@ export default function Events() {
 
             {/**Campo para la fecha, usando el componente react/calendar */}
             <Form.Group controlId="eventDate" className='mb-3'>
-              <Calendar 
+              <Calendar
                 onChange={setEventDate}
                 value={eventDate.toDateString()}
                 minDate={new Date()} // No se pueden crear nuevos eventos anteriores a la fecha actual
@@ -304,7 +340,7 @@ export default function Events() {
             {/**Campo para la ubicación del evento */}
             <Form.Group controlId="eventLocation" className='d-flex align-items-center column-gap-3 mb-3'>
               <Form.Label><GeoAlt /></Form.Label>
-              <Form.Control 
+              <Form.Control
                 type="text"
                 value={eventLocation}
                 placeholder='Ubicación'
@@ -318,7 +354,7 @@ export default function Events() {
         {/**Footer con botones de 'cancelar' y 'enviar form' */}
         <Modal.Footer className='d-flex flex-wrap justify-content-around'>
           {/**Botón cancelar */}
-          <Button 
+          <Button
             variant="outline-secondary"
             className='flex-fill border-0'
             onClick={() => setShowModal(false)}

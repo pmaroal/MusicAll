@@ -223,17 +223,17 @@ export function CreateGroup() {
 }
 
 
-/**Función GetGroupInfo para obtener la información de un grupo y sus miembros. Se utiliza en la vista 'Groups'.
- * Utiliza varios useEffect para obtener:
- *  -   los grupos de usuario,
- *  -   los datos del grupo seleccionado,
- *  -   los datos de los miembros de ese grupo.
+/** Función GetGroupInfo para obtener la información de un grupo y sus miembros. Se utiliza en la vista 'Groups y InfoGroup'.
+ *  Utiliza varios useEffect para obtener:
+ *  - los grupos de usuario,
+ *  - los datos del grupo seleccionado,
+ *  - los datos de los miembros de ese grupo.
  */
 export function GetGroupInfo() {
     const { currentUser } = useAuth(); // Cargar los datos del usuario actual
-    const [userGroups, setUserGroups] = useState([]); // Estado con el listado con los grupos a los que pertenece el usuario
+    const [userGroups, setUserGroups] = useState([]); // Estado con el listado de grupos a los que pertenece el usuario
     const [selectedGroup, setSelectedGroup] = useState(null); // Grupo seleccionado 
-    const [groupMembers, setGroupMembers] = useState({}); // Objeto con los miembros del grupo
+    const [groupMembers, setGroupMembers] = useState({}); // Estado con los miembros del grupo
     const location = useLocation(); // Obtiene valores de la URL
     const navigate = useNavigate(); // Permite navegar entre pantallas
     const [error, setError] = useState(''); // Mensaje de error
@@ -242,92 +242,96 @@ export function GetGroupInfo() {
     useEffect(() => {
         const fetchUserGroups = async () => {
             try {
-                // Obtener las referencias de los grupos del usuario actual desde la colección 'rel_group_user'
-                const relRef = await firestore.collection("rel_group_user").where("userId", "==", currentUser.uid).get();
-                // Extraer los IDs de esos grupos
-                const userGroupIds = relRef.docs.map(doc => doc.data().groupId);
+                setError('');
+                if (currentUser) {
+                    // Obtener las referencias de los grupos del usuario actual desde la colección 'rel_group_user'
+                    const relRef = await firestore.collection("rel_group_user").where("userId", "==", currentUser.uid).get();
+                    // Conseguir los IDs de esos grupos
+                    const userGroupIds = relRef.docs.map(doc => doc.data().groupId);
 
-                // Mapear las IDs de los grupos del usuario, para obtener los datos de cada grupo
-                const fetchedUserGroups = await Promise.all(userGroupIds.map(async (groupId) => {
-                    const groupRef = await firestore.collection("groups").doc(groupId).get();
-                    return { id: groupRef.id, ...groupRef.data() };
-                }));
-                // Si el usuario no pertenece a ningún grupo, mostrar un mensaje de error
-                if (fetchUserGroups.length === 0) {
-                    setError("Aún no perteneces a ningún grupo.");
+                    // Mapear las IDs de los grupos del usuario, para obtener los datos de cada grupo
+                    const fetchedUserGroups = await Promise.all(userGroupIds.map(async (groupId) => {
+                        const groupRef = await firestore.collection("groups").doc(groupId).get();
+                        return { id: groupRef.id, ...groupRef.data() };
+                    }));
+
+                    // Establecer los grupos del usuario
+                    setUserGroups(fetchedUserGroups);
                 }
-
-                // Establecer los grupos del usuario
-                setUserGroups(fetchedUserGroups);
             } catch (error) {
                 setError("Error al cargar los grupos del usuario");
             }
         };
 
-        // Si hay un usuario registrado, llamar a la función para cargar los grupos
-        if (currentUser) {
-            fetchUserGroups();
-        }
+        fetchUserGroups();
     }, [currentUser]);
-    
-    // useEffect para cargar los miembros de los grupos seleccionados por el usuario
+
+    //useEffect para obtener los datos de un grupo desde la URL
+    useEffect(() => {
+        const fetchGroupFromURL = async () => {
+            try {
+                setError('');
+                // Buscar el nombre del grupo en la URL
+                const groupName = new URLSearchParams(location.search).get("nombre");
+                // Si la url tiene un nombre de un grupo lo busca en la DB
+                if (groupName) {
+                    const groupQuery = await firestore.collection("groups").where("name", "==", groupName).get();
+                    // Si hay algún resultado obtiene los datos del grupo
+                    if (!groupQuery.empty) {
+                        const groupData = groupQuery.docs[0].data();
+                        // Establecerlo como grupo seleccionado
+                        setSelectedGroup({ id: groupQuery.docs[0].id, ...groupData });
+                    }
+                }
+            } catch (error) {
+                setError("Error al cargar el grupo desde la URL");
+            }
+        };
+
+        fetchGroupFromURL();
+    }, [location.search]);
+
+    // useEffect para obtener los miembros del grupo
     useEffect(() => {
         const fetchGroupMembers = async () => {
             try {
-                // Objeto para almacenar los datos de los miembros de los grupos
-                const groupMembersData = {};
-                // Iterar sobre los grupos del usuario
-                for (const group of userGroups) {
-                    // Obtener los IDs de los miembros del grupo desde la colección 'rel_group_user'
-                    const relRef = await firestore.collection("rel_group_user").where("groupId", "==", group.id).get();
-
-                    // Obtener los datos de los miembros del grupo mapeando sus IDs
+                setError('');
+                // Comrpueba si hay algún grupo seleccionado primero
+                if (selectedGroup) {
+                    // Busca las relaciones de ese grupo con los usuarios
+                    const relRef = await firestore.collection("rel_group_user").where("groupId", "==", selectedGroup.id).get();
+                    // Mapea los resultados y obtiene los datos de cada usuario
                     const membersData = await Promise.all(relRef.docs.map(async (doc) => {
                         const userData = await firestore.collection("users").doc(doc.data().userId).get();
-                        return { ...userData.data(), role: doc.data().role };
+                        return { id: doc.data().userId, ...userData.data(), role: doc.data().role };
                     }));
 
-                    // Almacenar los datos de los miembros en el objeto utilizando el ID del grupo como clave
-                    groupMembersData[group.id] = membersData;
+                    // Los establece como miembros del grupo en la vista
+                    setGroupMembers(prevState => ({
+                        ...prevState,
+                        [selectedGroup.id]: membersData
+                    }));
                 }
-
-                // Establecer los datos de los miembros de los grupos en el estado
-                setGroupMembers(groupMembersData);
             } catch (error) {
                 setError("Error al cargar los miembros del grupo");
             }
         };
-        
-        // Si hay un grupo seleccionado, llamar a la función para cargar los miembros del grupo
-        if (selectedGroup) {
-            fetchGroupMembers();
-        }
-    }, [selectedGroup, userGroups]);
 
-
-    // useEffect para establecer el grupo seleccionado basado en la consulta de la URL
-    useEffect(() => {
-        // Obtener el nombre del grupo de la consulta de la URL
-        const groupName = new URLSearchParams(location.search).get("nombre");
-        // Buscar el grupo en los grupos del usuario que coincida con el nombre de la URL
-        const group = userGroups.find(group => group.name === groupName);
-        // Establecer el grupo seleccionado
-        setSelectedGroup(group);
-    }, [location.search, userGroups]);
-
-
+        fetchGroupMembers();
+    }, [selectedGroup]);
 
     return {
         navigate, // Permite navegar entre pantallas
         location, // Obtiene la url de la dirección actual
         currentUser, // Datos del usuario actual
         userGroups, // Listado de grupos del usuario
-        groupMembers, // Objeto con un listado de usuarios en un grupo
+        groupMembers, // Listado de usuarios en el grupo seleccionado
         selectedGroup, // Datos del grupo seleccionado
         setSelectedGroup, // Estado para indicar el grupo seleccionado
         error, // Mensaje de error
     }
 }
+
 
 
 /**Función EditGroup para modificar los datos del grpo. Se utiliza en la vista 'Groups'.
@@ -351,34 +355,43 @@ export function EditGroup() {
         }));
     };
 
+    // Función para invitar a un usuario a tus grupos
     const inviteUserToGroup = async (userId, groupId) => {
         try {
+            setError('');
             // Verifica si el usuario ya está en el grupo
-            const isUserInGroup = groupMembers[groupId]?.some(member => member.id === userId);
-            if (isUserInGroup) {
-                console.log("El usuario ya está en el grupo.");
-                return; // No se envía la invitación si el usuario ya está en el grupo
-            }
-    
-            // Añade una nueva entrada en la colección 'rel_group_user' para invitar al usuario al grupo
-            await firestore.collection("rel_group_user").add({
-                userId: userId,
-                groupId: groupId,
-                role: "",
-            });
-    
-            // Actualiza los datos de los miembros del grupo después de la invitación
-            const updatedGroupMembers = { ...groupMembers };
-            if (updatedGroupMembers[groupId]) {
-                updatedGroupMembers[groupId].push({ id: userId }); // Añade al usuario a la lista de miembros del grupo
-                setGroupMembers(updatedGroupMembers); // Actualiza los miembros del grupo
-            }
+            const isUserInGroup = await firestore.collection("rel_group_user").where("groupId", "==", groupId).where("userId", "==", userId).get();
             
+            //Verifica que el usuario no esté en ese grupo
+            if (isUserInGroup) {
+                setError("El usuario ya está en el grupo.");
+                console.log("El usuario ya está en el grupo")
+                return; // No se envía la invitación si el usuario ya está en el grupo
+            } else {
+                // Añade una nueva entrada en la colección 'rel_group_user' para invitar al usuario al grupo
+                await firestore.collection("rel_group_user").add({
+                    userId: userId,
+                    groupId: groupId,
+                    role: "",
+                });
+            }
+            // Actualiza los datos de los miembros del grupo después de la invitación
+            setGroupMembers(prevState => {
+                const updatedGroupMembers = { ...prevState };
+                const updatedGroup = updatedGroupMembers[groupId] || [];
+                const newMember = { id: userId };
+                return {
+                    ...prevState,
+                    [groupId]: [...updatedGroup, newMember]
+                };
+            });
         } catch (error) {
-            setError("Error al invitar al usuario al grupo: " + error); 
+            setError("Error al invitar al usuario al grupo: " + error);
         }
     };
-    
+
+
+
 
 
     // Función para permitir que un miembro abandone el grupo (si no es el Admin)
@@ -394,7 +407,7 @@ export function EditGroup() {
                         doc.ref.delete(); // Borra el documento de relación
                     });
                 });
-    
+
             // Actualiza los datos de los miembros del grupo después de la salida del miembro
             const updatedGroupMembers = { ...groupMembers };
             if (updatedGroupMembers[groupId]) {
@@ -402,9 +415,9 @@ export function EditGroup() {
                 setGroupMembers(updatedGroupMembers); // Actualiza los miembros del grupo
                 navigate("/mis-grupos"); // Navega de vuelta a la lista de grupos
             }
-            
+
         } catch (error) {
-            setError("Error al salir del grupo: " + error); 
+            setError("Error al salir del grupo: " + error);
         }
     };
 
@@ -438,7 +451,7 @@ export function DeleteGroup() {
             // Agrega las eliminaciones a un lote de operaciones
             const batch = firestore.batch();
             relGroupUserRef.forEach(doc => {
-                batch.delete(doc.ref); 
+                batch.delete(doc.ref);
             });
             await batch.commit(); // Ejecuta todas las operaciones de eliminación en un lote
 
