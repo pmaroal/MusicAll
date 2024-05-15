@@ -66,12 +66,12 @@ function NavbarTop() {
         </Nav>
 
         {/* Botón para ir a la página de notificaciones */}
-        <Nav.Link href="/notificaciones" className="btn position-relative ms-3 me-4">
+        <Nav.Link href="/notificaciones" className="position-relative mx-4">
           <BellFill size={"24px"} />
           {/**Muestra una notificación aunque no haya
            * TODO! corregirlo cuando se implementen las notificaciones
            */}
-          <span className="badge rounded-circle bg-danger position-absolute top-0 start-100 translate-middle">1</span>
+          <span className="badge d-flex p-2 rounded-circle bg-danger position-absolute top-0 start-100 translate-middle"></span>
         </Nav.Link>
 
         {/**Icono usuario */}

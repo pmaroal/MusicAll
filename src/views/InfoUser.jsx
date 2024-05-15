@@ -144,7 +144,7 @@ export default function UserProfile() {
                                                 variant='light' 
                                                 key={index} 
                                                 className='rounded-pill border'
-                                                onClick={() => navigate(`/mis-grupos?nombre=${group.name}`)}
+                                                onClick={() => navigate(`/grupo?nombre=${group.name}`)}
                                             >
                                                 <PeopleFill className='mb-1 me-2' /> {group.name}
                                             </Button>
@@ -176,6 +176,10 @@ export default function UserProfile() {
                     </Card>
                 </Container>
             )}
+
+            {/**Da menos problemas si se crea el modal en el mismo componente que en uno distinto
+             * <!TODO: Refactorizar a un componente distinto>
+             */}
             <Modal show={showModal} onHide={() => setShowModal(false)} centered>
                 <Modal.Header closeButton>
                     <Modal.Title>Selecciona un grupo al que invitar</Modal.Title>

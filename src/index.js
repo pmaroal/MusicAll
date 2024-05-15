@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import Home from './App';
+import App from './App';
 import 'bootstrap/dist/css/bootstrap.min.css' // Importar bootstrap CSS
 import 'bootstrap/dist/js/bootstrap.bundle.min.js'; // Importar bootstrap JS
 import * as serviceWorkerRegistration from './serviceWorkerRegistration';
@@ -9,7 +9,7 @@ import reportWebVitals from './reportWebVitals';
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
-    <Home />
+    <App />
   </React.StrictMode>
 );
 

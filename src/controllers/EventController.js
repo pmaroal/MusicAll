@@ -37,7 +37,9 @@ export function CreateEvent() {
       // >!TODO: No sirve para nada esta validación, hay que implementarla correctamente>
       if (!eventTitle) {
         setError('Por favor, ingresa un título para el evento.');
+        return;
       }
+
       const title = eventTitle; //Título del evento
       const date = eventDate.toLocaleDateString(); // Fecha del evento
       const time = eventTime.join('-'); // Unir la hora de inicio y fin en un array
@@ -78,6 +80,7 @@ export function CreateEvent() {
       setEventTime(['09:00', '10:00']);
       setSelectedGroup('');
       setEventType('ensayo');
+
     } catch (error) {
       console.error("Error creando evento: ", error);
     }
@@ -99,8 +102,8 @@ export function CreateEvent() {
     setEventLocation, // Función para actualizar la ubicación
     handleCreateEvent, // Función para crear un nuevo evento con el formulario
   };
-  
 }
+
 
 
 
@@ -172,13 +175,8 @@ export function GetUserEvents() {
 
 
 
-/**Función DeleteEvent para eliminar un grupo en la vista 'Events'
- * <!TODO: el código parece correcto (casi idéntico al de borrar grupos), pero no se porque no funciona>
- */
-export function DeleteEvent(eventId) {
-  // Función async para eliminar un evento utilizando su ID
-  const deleteEvent = async () => {
-    console.log("DeleteEvent(eventId):", eventId); // Imprime el id del evento. Es undefined siempre
+/**Función DeleteEvent para eliminar un grupo en la vista 'Events' */
+export async function DeleteEvent(eventId) {
     try {
       // Eliminar el evento de la colección en Firestore
       await firestore.collection("events").doc(eventId).delete();
@@ -196,14 +194,9 @@ export function DeleteEvent(eventId) {
         console.log("Error al buscar a que grupo pertenece el evento");
       }
 
-      console.log("Se eliminó el evento", eventId) // Log de confirmación
+      console.log("Se eliminó el evento", eventId)
 
     } catch (error) {
       console.error("Error eliminando el evento: ", error);
     }
-  };
-
-  return {
-    deleteEvent, // Función para eliminar un evento
-  };
 }
