@@ -40,10 +40,20 @@ export function CreateEvent() {
         return;
       }
 
+      // Validar el campo de la hora y formatearlo
+      let formattedTime;
+      if (eventTime === null) { // Si no se ha indicado hora se guardará como evento de todo el día
+        formattedTime = 'Todo el día';
+      } else if (eventTime.some(time => time === null)) { // Si se ha indicado solo una hora (lo lógico que sea la del inicio), se muestra esa hora
+        formattedTime = eventTime.filter(time => time !== null).join('-');
+      } else { // Si no (y hay 2 horas), se unen ambas con un guión
+        formattedTime = eventTime.join('-');
+      }
+
       const title = eventTitle; //Título del evento
       const date = eventDate.toLocaleDateString(); // Fecha del evento
-      const time = eventTime.join('-'); // Unir la hora de inicio y fin en un array
-      const createdBy = currentUser.uid; // Usuario que la ha creado
+      const time = formattedTime; // Hora del evento
+      const createdBy = currentUser.uid; // Usuario que lo ha creado
       const type = eventType; // Tipo de evento (ensayo, concierto)
       const location = eventLocation; // Ubicación del evento
 
@@ -105,8 +115,6 @@ export function CreateEvent() {
 }
 
 
-
-
 /**Función GetUserEvents para obtener y mostrar los eventos del usuario en la vista 'Events'
  * Ordena el array de eventos por fecha, ya que la BBDD no permite hacer búsquedas compuestas (where.orderBy)
  */
@@ -122,47 +130,48 @@ export function GetUserEvents() {
   useEffect(() => {
     const fetchEvents = async () => {
       try {
-        // Verificar si el usuario tiene grupos asociados
-        if (userGroups.length === 0) return;
-
-        // Obtener los eventos creados por el usuario
-        const userEvents = await firestore.collection("events").where("createdBy", "==", currentUser.uid).get();
-        const fetchedUserEvents = userEvents.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-
         // Obtener los eventos de los grupos asociados al usuario
         const groupEvents = [];
-
-        // Obtener los IDs de los grupos asociados al usuario
-        const groupIds = userGroups.map(group => group.id);
-
-        // Recorrer los grupos del usuario buscando eventos asociados
-        for (const groupId of groupIds) {
-          const groupEventsRef = await firestore.collection("rel_group_event").where("groupId", "==", groupId).get();
-          const fetchedGroupEvents = groupEventsRef.docs.map(doc => doc.data().eventId);
-
-          // Comprueba que no sean los mismos eventos que ha creado el usuario (y ya ha mostrado)
-          for (const eventId of fetchedGroupEvents) {
-            const eventRef = await firestore.collection("events").doc(eventId).get();
-            if (eventRef.exists && eventRef.data().createdBy !== currentUser.uid) {
-              const eventData = { id: eventRef.id, ...eventRef.data(), groupId };
-              groupEvents.push(eventData);
+        // Verificar si el usuario tiene grupos asociados
+        if (userGroups.length > 0) {
+          // Obtener los IDs de los grupos asociados al usuario
+          const groupIds = userGroups.map(group => group.id);
+          // Recorrer los grupos del usuario buscando eventos asociados
+          for (const groupId of groupIds) {
+            const groupEventsRef = await firestore.collection("rel_group_event").where("groupId", "==", groupId).get();
+            const fetchedGroupEvents = groupEventsRef.docs.map(doc => doc.data().eventId);
+            for (const eventId of fetchedGroupEvents) {
+              const eventRef = await firestore.collection("events").doc(eventId).get();
+              if (eventRef.exists) {
+                const eventData = { id: eventRef.id, ...eventRef.data(), groupId };
+                groupEvents.push(eventData);
+              }
             }
           }
         }
-
-        // Combina los eventos (usuario + grupos) y los ordena por fecha
-        const combinedEvents = [...fetchedUserEvents, ...groupEvents];
+    
+        // Obtener los eventos creados por el usuario
+        const userEvents = await firestore.collection("events").where("createdBy", "==", currentUser.uid).get();
+        const fetchedUserEvents = userEvents.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    
+        // Eliminar eventos creados por el usuario si ya están asociados a un grupo
+        const filteredUserEvents = fetchedUserEvents.filter(userEvent =>
+          !groupEvents.some(groupEvent => groupEvent.id === userEvent.id)
+        );
+    
+        // Combinar los eventos (grupos + usuario) y ordenarlos por fecha
+        const combinedEvents = [...groupEvents, ...filteredUserEvents];
         const sortedEvents = combinedEvents.sort((a, b) => {
           const dateA = new Date(a.date.split("/").reverse().join("/"));
           const dateB = new Date(b.date.split("/").reverse().join("/"));
           return dateB - dateA;
         });
-
+    
         setEvents(sortedEvents);
       } catch (error) {
         console.error("Error: ", error);
       }
-    };
+    };    
 
     fetchEvents();
   }, [currentUser, userGroups]);
@@ -174,29 +183,64 @@ export function GetUserEvents() {
 }
 
 
+/**Función GetGroupEvents para obtener y mostrar los eventos del grupo en la vista 'InfoGroup'
+ * Ordena el array de eventos por fecha, ya que la BBDD no permite hacer búsquedas compuestas (where.orderBy)
+ */
+export function GetGroupEvents(selectedGroup, setGroupEvents) {
+  const fetchGroupEvents = async () => {
+      try {
+          // Busca relaciones de grupos con eventos en la coleccion rel_group_events
+          const groupEventsRef = await firestore.collection("rel_group_event").where("groupId", "==", selectedGroup.id).get();
+          const fetchedGroupEvents = groupEventsRef.docs.map(async (doc) => {
+              const eventData = doc.data();
+              // Obtener la información completa del evento
+              const eventDoc = await firestore.collection("events").doc(eventData.eventId).get();
+              return eventDoc.data();
+          });
+          // Esperar a que se resuelvan todas las promesas y luego se actualiza el estado
+          const groupEvents = await Promise.all(fetchedGroupEvents);
+
+          // Ordenarlos por fecha
+          const sortedEvents = groupEvents.sort((a, b) => {
+            const dateA = new Date(a.date.split("/").reverse().join("/"));
+            const dateB = new Date(b.date.split("/").reverse().join("/"));
+            return dateB - dateA;
+          });
+
+          // Establecer los eventos del grupo
+          setGroupEvents(sortedEvents);
+      } catch (error) {
+          console.error("Error: ", error);
+      }
+  };
+
+  if (selectedGroup) {
+      fetchGroupEvents();
+  }
+}
+
+
 
 /**Función DeleteEvent para eliminar un grupo en la vista 'Events' */
 export async function DeleteEvent(eventId) {
-    try {
-      // Eliminar el evento de la colección en Firestore
-      await firestore.collection("events").doc(eventId).delete();
+  try {
+    // Eliminar el evento de la colección en Firestore
+    await firestore.collection("events").doc(eventId).delete();
 
-      // Buscar y eliminar las referencias del evento en la colección de relaciones grupo-evento
-      const relGroupEventQuery = firestore.collection("rel_group_event").where("eventId", "==", eventId);
-      const relGroupEventSnapshot = await relGroupEventQuery.get();
+    // Buscar y eliminar las referencias del evento en la colección de relaciones grupo-evento
+    const relGroupEventQuery = firestore.collection("rel_group_event").where("eventId", "==", eventId);
+    const relGroupEventSnapshot = await relGroupEventQuery.get();
 
-      // Si hay relaciones entre evento y grupo, las elimina.
-      if (!relGroupEventSnapshot.empty) {
-        relGroupEventSnapshot.forEach(async (doc) => {
-          await doc.ref.delete();
-        });
-      } else {
-        console.log("Error al buscar a que grupo pertenece el evento");
-      }
-
-      console.log("Se eliminó el evento", eventId)
-
-    } catch (error) {
-      console.error("Error eliminando el evento: ", error);
+    // Si hay relaciones entre evento y grupo, las elimina.
+    if (!relGroupEventSnapshot.empty) {
+      relGroupEventSnapshot.forEach(async (doc) => {
+        await doc.ref.delete();
+      });
     }
+
+    console.log("Se eliminó el evento", eventId)
+
+  } catch (error) {
+    console.error("Error eliminando el evento: ", error);
+  }
 }

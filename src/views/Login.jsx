@@ -77,7 +77,7 @@ export default function LogIn() {
                         {/* Separador horizontal y texto "O" */}
                         <div className="d-flex align-items-center justify-content-center mt-3">
                             <hr className="flex-grow-1" />
-                            <div className="mx-3 text-black-50">O</div>
+                            <div className="mx-3 text-muted">O</div>
                             <hr className="flex-grow-1" />
                         </div>
                     </Form>

@@ -21,3 +21,9 @@
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+
+# Ignorar archivos de firma y assetlinks.json en la carpeta android
+/android/signing.keystore
+/android/signing-key-info.txt
+/android/app/src/main/assets/.well-known/assetlinks.json

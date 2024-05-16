@@ -38,7 +38,6 @@ export default function Groups() {
                 <div className='d-flex flex-wrap flex-row justify-content-center my-3'>
                     {userGroups.map((group, index) => (
                         <div key={index} className='col-12 col-md p-2'>
-
                             <Card className='shadow border-0'>
                                 <Card.Body>
                                     <Card.Title>{group.name}</Card.Title>
@@ -58,10 +57,8 @@ export default function Groups() {
 
 
             ) : (
-                <>
-                    {/**Si no hay grupos mmuestra un mensaje de error */}
-                    <Alert variant='danger' className='text-center'>Aún no perteneces ni administras ningún grupo.</Alert>
-                </>
+                // Si no hay grupos mmuestra un mensaje de error
+                <Alert variant='warning' className='text-center'>Aún no perteneces ni administras ningún grupo.</Alert>
             )
             }
         </Container >

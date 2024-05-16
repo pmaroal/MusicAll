@@ -391,9 +391,6 @@ export function EditGroup() {
     };
 
 
-
-
-
     // Función para permitir que un miembro abandone el grupo (si no es el Admin)
     const leaveGroup = async (memberId, groupId) => {
         try {

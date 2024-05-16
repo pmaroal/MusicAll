@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { firestore } from "../config/firebase";
 import { Modal, ListGroup, Badge, Form, Alert, Button, OverlayTrigger, Tooltip } from "react-bootstrap";
-import { PersonCircle, MusicNoteList, PeopleFill, CalendarWeekFill, ArrowLeft } from "react-bootstrap-icons";
+import { PersonCircle, MusicNoteList, PeopleFill, CalendarWeekFill, ArrowLeft, Clock, Calendar2Event } from "react-bootstrap-icons";
 import { useAuth } from "../services/AuthService";
 import { Link } from "react-router-dom";
 
@@ -19,7 +19,6 @@ function SearchBar({ showModal, handleCloseModal }) {
      *  -   Añadir botones de acciones rápidas en cada resultado de búsqueda
      *  -   Actualizar los campos de búsqueda y ajustarlo al resto de categorías (ahora solo muestra data de users, el resto vacíos)
     */
-
 
     useEffect(() => {
         // Función asincrónica para obtener datos de Firestore
@@ -44,7 +43,7 @@ function SearchBar({ showModal, handleCloseModal }) {
                 // Obtener documentos de la colección seleccionada, limitando 'users' y 'groups' a 10 para una carga inicial más rápida.
                 let querySnapshot = await query.get();
                 if (selectedFilter === "users" || selectedFilter === "groups") {
-                    querySnapshot = await query.limit(10).get();
+                    querySnapshot = await query.limit(5).get();
                 }
 
 
@@ -210,11 +209,12 @@ function SearchBar({ showModal, handleCloseModal }) {
                                 >
                                     {getFilterIcon(selectedFilter)}
                                     <div className="d-grid">
-                                        {result.name} {result.surname}
+                                        <span className="fw-semibold">{result.name} {result.surname}</span>
                                         {/**Muestra una badge si es tu propia cuenta */}
-                                        {result.uid === currentUser.uid && (<span className="badge bg-warning position-absolute end-0">Tu cuenta</span>)}
+                                        {result.uid === currentUser.uid && (
+                                            <span className="badge bg-warning position-absolute end-0">Tu cuenta</span>)
+                                        }
                                         <span className="rounded-pill bg-body-secondary text-muted small px-2">{result.email}</span>
-
                                     </div>
                                 </Link>
                             )}
@@ -226,7 +226,7 @@ function SearchBar({ showModal, handleCloseModal }) {
                                     onClick={handleCloseModal}
                                 >
                                     {getFilterIcon(selectedFilter)}
-                                    {result.name}
+                                    <span className="text-capitalize fw-semibold">{result.name}</span>
                                 </Link>
                             )}
 
@@ -240,44 +240,50 @@ function SearchBar({ showModal, handleCloseModal }) {
 
                             {/**Eventos */}
                             {selectedFilter === 'events' && (
-                                <div className="d-grid">
-                                    {/**Mostrar la fecha */}
-                                    {result.date && (
-                                        <span className="small fw-semibold text-capitalize">
-                                            {result.date}
-                                        </span>
-                                    )}
-
-                                    <div className="row mt-2">
-                                        {/**Mostrar la hora */}
-                                        {result.time && (
-                                            <span className="col-auto me-1 small fw-semibold">
-                                                {result.time}
+                                <div className="d-flex flex-row gap-2">
+                                    <div className="d-grid gap-1">
+                                        {/**Mostrar la fecha */}
+                                        {result.date && (
+                                            <span className="d-flex align-items-center gap-2 small fw-semibold">
+                                                <Calendar2Event />
+                                                {result.date}
                                             </span>
                                         )}
 
-                                        {/**Colorear según el tipo de evento */}
-                                        <OverlayTrigger
-                                            trigger={["hover", "focus"]}
-                                            placement="top"
-                                            overlay={<Tooltip id="tooltip">{result.type}</Tooltip>}
-                                        >
-                                            <span className={`col-auto px-1 rounded-2 
-                                                bg-${
-                                                    result.type === 'concierto' ? 'warning' 
-                                                    : result.type === 'ensayo' ? 'success'
-                                                    : 'body-secondary'
-                                                }`}
-                                            />
-                                        </OverlayTrigger>
-
-                                        {/**Nombre del evento */}
-                                        <span className="col-auto">{result.title}</span>
+                                        {/**Mostrar la hora */}
+                                        {result.time && (
+                                            <span className="d-flex align-items-center gap-2 small">
+                                                <Clock />
+                                                {result.time}
+                                            </span>
+                                        )}
                                     </div>
+
+                                    {/**Colorear según el tipo de evento */}
+                                    <OverlayTrigger
+                                        trigger={["hover", "focus"]}
+                                        placement="top"
+                                        overlay={<Tooltip id="tooltip">{result.type}</Tooltip>}
+                                    >
+                                        <span className={`px-1 rounded-2 
+                                                bg-${result.type === 'concierto' ? 'warning'
+                                                : result.type === 'ensayo' ? 'success'
+                                                    : 'body-secondary'
+                                            }`}
+                                        />
+                                    </OverlayTrigger>
+
+                                    {/**Nombre del evento */}
+                                    <span className="fw-semibold">{result.title}</span>
                                 </div>
                             )}
                         </ListGroup.Item>
                     ))}
+                    {!searchText && (searchResults.length === 5) && (selectedFilter === 'users' || selectedFilter === 'groups') && (
+                        <ListGroup.Item className="container text-center">
+                            <span className="small text-muted">Solo se muestran 5 resultados</span>
+                        </ListGroup.Item>
+                    )}
                 </ListGroup>
 
             </Modal.Body >

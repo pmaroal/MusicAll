@@ -21,9 +21,11 @@ reportWebVitals();
 // If you want your app to work offline and load faster, you can change
 // unregister() to register() below. Note this comes with some pitfalls.
 // Learn more about service workers: https://cra.link/PWA
-/*if ("serviceWorker" in navigator) {
-  serviceWorkerRegistration.register("sw.js");
-}*/
+
+// Lo desactivo porque no está bien configurado y da errores
+// if ("serviceWorker" in navigator) {
+//  serviceWorkerRegistration.register("sw.js");
+// }
 serviceWorkerRegistration.unregister();
 
 
