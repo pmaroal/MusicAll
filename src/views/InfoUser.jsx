@@ -135,7 +135,7 @@ export default function UserProfile() {
                             <div className='mb-3'>
                                 <h4>Grupos</h4>
                                 {userGroups.length > 0 ? (
-                                    <div className='d-flex flex-wrap justify-content-md-center gap-3'>
+                                    <div className='d-flex flex-wrap gap-3'>
                                         {/**Mapear todos los grupos
                                          * TODO! Transformar en botones para poder navegar a los grupos
                                          */}
@@ -143,7 +143,7 @@ export default function UserProfile() {
                                             <Button
                                                 variant='light' 
                                                 key={index} 
-                                                className='rounded-pill border'
+                                                className='flex-fill text-start rounded-pill border'
                                                 onClick={() => navigate(`/grupo?nombre=${group.name}`)}
                                             >
                                                 <PeopleFill className='mb-1 me-2' /> {group.name}
@@ -151,7 +151,7 @@ export default function UserProfile() {
                                         ))}
                                     </div>
                                 ) : (
-                                    <p>{userProfile.name} aún no pertenece a ningún grupo.</p>
+                                    <Alert variant='warning' className='text-center'>Aún no perteneces a ningún grupo.</Alert>
                                 )}
                             </div>
 
@@ -182,13 +182,13 @@ export default function UserProfile() {
              */}
             <Modal show={showModal} onHide={() => setShowModal(false)} centered>
                 <Modal.Header closeButton>
-                    <Modal.Title>Selecciona un grupo al que invitar</Modal.Title>
+                    <Modal.Title>Seleccionar un grupo:</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
                     <div className='d-flex flex-row flex-wrap gap-3 justify-content-center '>
                         {groupsUserIsAdmin.length > 0 ? (
                             groupsUserIsAdmin.map(group => (
-                                <Button variant='primary' className='btn-lg rounded-pill fw-semibold shadow'
+                                <Button variant='outline-dark' className='flex-fill '
                                     key={group.id}
                                     onClick={() => {
                                         inviteUserToGroup(userProfile.uid, group.id);
@@ -199,10 +199,9 @@ export default function UserProfile() {
                                 </Button>
                             ))
                         ) : (
-                            <Alert className='text-center'>Actualmente no administras ningún grupo</Alert>
+                            <Alert variant="warning" className='text-center'>Actualmente no administras ningún grupo</Alert>
                         )}
                     </div>
-
                 </Modal.Body>
             </Modal>
         </>

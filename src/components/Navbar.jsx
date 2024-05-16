@@ -71,7 +71,7 @@ function NavbarTop() {
           {/**Muestra una notificación aunque no haya
            * TODO! corregirlo cuando se implementen las notificaciones
            */}
-          <span className="badge d-flex p-2 rounded-circle bg-danger position-absolute top-0 start-100 translate-middle"></span>
+          <span className="badge d-flex p-1 rounded-circle bg-danger position-absolute top-0 start-100 translate-middle-x"></span>
         </Nav.Link>
 
         {/**Icono usuario */}
@@ -113,14 +113,14 @@ function NavbarBottom() {
           <HouseFill size={"24px"} />
         </Nav.Link>
 
-        {/* Botón para ir a la página de eventos */}
-        <Nav.Link href="/eventos" className={location.pathname === '/eventos' ? 'badge bg-primary-subtle rounded-pill py-2 px-4 active' : 'badge text-muted py-2 px-4'}>
-          <CalendarWeekFill size={"24px"} />
-        </Nav.Link>
-
         {/* Botón para ir a la página de repertorio */}
         <Nav.Link href="/repertorio" className={location.pathname === '/repertorio' ? 'badge bg-primary-subtle rounded-pill py-2 px-4 active' : 'badge text-muted py-2 px-4'}>
           <MusicNoteList size={"24px"} />
+        </Nav.Link>
+
+        {/* Botón para ir a la página de eventos */}
+        <Nav.Link href="/eventos" className={location.pathname === '/eventos' ? 'badge bg-primary-subtle rounded-pill py-2 px-4 active' : 'badge text-muted py-2 px-4'}>
+          <CalendarWeekFill size={"24px"} />
         </Nav.Link>
 
         {/* Botón para ir a la página de grupos */}
